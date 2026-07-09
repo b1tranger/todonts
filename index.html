@@ -20,6 +20,16 @@
 </head>
 <body>
 
+  <!-- App Preloader / Splash Screen -->
+  <div id="app-preloader" class="app-preloader">
+    <div class="preloader-content">
+      <img src="./icon.svg" alt="To-Don't Logo" class="preloader-logo">
+      <h1 class="preloader-title">To-Don't</h1>
+      <p class="preloader-subtitle">Habit Reform through Mindful Restraint</p>
+      <div class="preloader-spinner"></div>
+    </div>
+  </div>
+
   <!-- App Header -->
   <header class="app-header">
     <div class="header-logo-group">
@@ -51,11 +61,18 @@
       </button>
       
       <div class="action-buttons">
-        <button id="install-btn" class="btn btn-primary hidden" title="Install as Desktop/Mobile App">
-          <span class="btn-icon"><i class="fa-solid fa-download"></i></span> Install App
-        </button>
+        <!-- Sidebar Brand Header (Mobile Only) -->
+        <div class="sidebar-brand">
+          <img src="./icon.svg" alt="To-Don't Logo" class="sidebar-logo">
+          <div class="header-title-group">
+            <h1 class="app-title">To-Don't</h1>
+            <p class="app-subtitle">Habit Reform through Mindful Restraint</p>
+          </div>
+        </div>
+
         <button id="theme-toggle" class="btn btn-secondary" title="Toggle Light/Dark Theme" aria-label="Toggle theme">
           <span id="theme-toggle-icon"><i class="fa-solid fa-moon"></i></span>
+          <span class="theme-toggle-text">Toggle Theme</span>
         </button>
         <label for="import-file" class="btn btn-secondary btn-file-label" title="Import a .md backup file">
           <span><i class="fa-solid fa-file-import"></i></span> Import
@@ -63,6 +80,10 @@
         </label>
         <button id="export-btn" class="btn btn-primary" title="Export markdown list backup">
           <span><i class="fa-solid fa-file-export"></i></span> Export
+        </button>
+
+        <button id="install-btn" class="btn btn-primary hidden" title="Install as Desktop/Mobile App">
+          <span class="btn-icon"><i class="fa-solid fa-download"></i></span> Install App
         </button>
       </div>
     </div>
@@ -74,7 +95,12 @@
     <section class="pane pane-left" aria-label="Interactive Tasks View">
       <div class="pane-header">
         <h2 class="pane-title">Interactive Tasks</h2>
-        <div class="pane-badge">Active View</div>
+        <div class="pane-header-actions">
+          <button id="clear-all-btn" class="btn-clear-all" title="Clear all tasks">
+            <i class="fa-solid fa-trash-can"></i> Clear All
+          </button>
+          <div class="pane-badge">Active View</div>
+        </div>
       </div>
       <div class="pane-content" id="interactive-view">
         <!-- Rendered tasks list will go here dynamically -->

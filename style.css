@@ -888,7 +888,43 @@ body {
   }
 
   .header-logo-group {
-    display: none !important; /* Hide logo group on mobile to make room for stats */
+    display: flex !important; /* Keep logo group visible on mobile screen top bar */
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .header-logo-group .app-logo {
+    width: 28px;
+    height: 28px;
+  }
+
+  .header-logo-group .header-title-group {
+    display: none !important; /* Hide title and subtitle in mobile top bar */
+  }
+
+  .stat-label {
+    display: none !important; /* Hide "Successes:" text on mobile screen */
+  }
+
+  .stats-panel {
+    margin-left: 0.75rem; /* Add left margin to stats-panel in mobile top bar */
+    gap: 0.5rem;
+  }
+
+  .stats-panel .stat-badge,
+  .stats-panel .profile-badge {
+    padding: 0.3rem 0.6rem; /* Reduced padding */
+    font-size: 0.75rem;     /* Smaller font size */
+    gap: 0.3rem;
+  }
+
+  .stats-panel .username-inline-edit {
+    font-size: 0.75rem;
+    width: 65px;
+  }
+
+  .stats-panel .username-inline-edit:focus {
+    width: 85px;
   }
 
   .header-controls {
@@ -965,13 +1001,362 @@ body {
 
   /* Move toggle button to divider when unhidden on mobile */
   .app-layout:not(.editor-hidden) .toggle-editor-btn {
-    top: auto;
-    bottom: -16px;
+    top: calc(50% - 16px);
+    left: auto;
     right: 16px;
+    bottom: auto;
     transform: none;
   }
 
   .app-layout:not(.editor-hidden) .toggle-editor-btn span {
     transform: rotate(90deg); /* point down to indicate layout */
   }
+
+  /* Mobile Footer Status Bar wrap layout overrides */
+  .app-status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    height: auto !important;
+    padding: 0.6rem 1.25rem;
+  }
+
+  .status-middle {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    order: 1;
+  }
+
+  .status-left {
+    order: 2;
+  }
+
+  .status-right {
+    order: 3;
+  }
+
+  /* Mobile Brand Header in Sidebar drawer */
+  .sidebar-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 2rem;
+    gap: 0.5rem;
+    width: 100%;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1.5rem;
+  }
+
+  .sidebar-logo {
+    width: 56px;
+    height: 56px;
+    filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.2));
+  }
+
+  .sidebar-brand .header-title-group {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .sidebar-brand .app-title {
+    font-size: 1.3rem !important;
+    margin: 0;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--text-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .sidebar-brand .app-subtitle {
+    display: block !important;
+    font-size: 0.75rem !important;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .theme-toggle-text {
+    display: inline;
+  }
+
+  #theme-toggle {
+    display: flex !important;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+
+  #install-btn {
+    margin-top: auto; /* Push PWA Install to the bottom of mobile sidebar */
+    width: 100%;
+  }
+}
+
+/* General / Desktop styling overrides */
+.sidebar-brand {
+  display: none;
+}
+
+.theme-toggle-text {
+  display: none;
+}
+
+/* ==========================================================================
+   Add Task Interactive UI Elements
+   ========================================================================== */
+.add-task-outer-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+.add-task-container {
+  position: relative;
+  display: inline-block;
+}
+
+.add-task-trigger-btn {
+  background-color: var(--accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-speed) var(--transition-curve);
+}
+
+.add-task-trigger-btn:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.add-task-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-pane);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 250px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.add-task-menu.hidden {
+  display: none;
+}
+
+.add-menu-item {
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+  width: 100%;
+  transition: background-color 0.2s;
+}
+
+.add-menu-item:hover {
+  background-color: var(--border-color);
+}
+
+.custom-checkbox-preview {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1.5px solid var(--text-secondary);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.custom-checkbox-preview.persistent {
+  border-radius: 50%;
+}
+
+.custom-checkbox-preview.recurring {
+  border-color: #10B981;
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
+}
+
+/* Inline Editable Span styles */
+.task-text[contenteditable="true"] {
+  outline: none;
+  border-bottom: 1px dashed transparent;
+  cursor: text;
+  transition: border-bottom-color 0.2s;
+}
+
+.task-text[contenteditable="true"]:focus {
+  border-bottom-color: var(--border-focus);
+}
+
+/* Word break and spacing for task text labels */
+.task-text {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Clear All Button Layout in pane-header */
+.pane-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-clear-all {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 0.35rem 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.btn-clear-all:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: #EF4444;
+  color: #EF4444;
+}
+
+/* Delete Task ("x") Button on each task item */
+.todont-item {
+  padding-right: 2.75rem !important; /* Make room for absolute positioned delete button */
+}
+
+.delete-task-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: 4px;
+}
+
+.delete-task-btn:hover {
+  color: #EF4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.todont-item:hover .delete-task-btn,
+.todont-item:focus-within .delete-task-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Preloader / Splash Screen */
+.app-preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-pane);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
+}
+
+.app-preloader.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.preloader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  max-width: 320px;
+  padding: 2rem;
+  animation: preloader-bounce 1.5s ease-in-out infinite alternate;
+}
+
+.preloader-logo {
+  width: 72px;
+  height: 72px;
+  filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.3));
+  margin-bottom: 0.5rem;
+}
+
+.preloader-title {
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.preloader-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.preloader-spinner {
+  margin-top: 1.5rem;
+  width: 24px;
+  height: 24px;
+  border: 2.5px solid var(--border-color);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: preloader-spin 0.8s linear infinite;
+}
+
+@keyframes preloader-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes preloader-bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-8px); }
 }

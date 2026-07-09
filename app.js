@@ -96,20 +96,20 @@ function parseYAML(yamlContent) {
     },
     history: []
   };
-  
+
   let currentSection = "";
   let currentHistoryItem = null;
-  
+
   for (let line of lines) {
     line = line.split('#')[0].trimEnd();
     if (!line.trim()) continue;
-    
+
     const rootMatch = line.match(/^([a-zA-Z0-9_-]+)\s*:/);
     if (rootMatch) {
       currentSection = rootMatch[1];
       continue;
     }
-    
+
     if (currentSection === "profile") {
       const fieldMatch = line.match(/^\s+([a-zA-Z0-9_-]+)\s*:\s*(.+)$/);
       if (fieldMatch) {
@@ -156,11 +156,11 @@ function parseYAML(yamlContent) {
       }
     }
   }
-  
+
   if (currentHistoryItem) {
     data.history.push(currentHistoryItem);
   }
-  
+
   return data;
 }
 
@@ -171,7 +171,7 @@ function stringifyYAML(data) {
   lines.push(`  username: "${data.profile.username || "Anonymous"}"`);
   lines.push(`  total_successes: ${data.profile.total_successes || 0}`);
   lines.push(`  global_last_synced: "${data.profile.global_last_synced || new Date().toISOString()}"`);
-  
+
   if (data.history && data.history.length > 0) {
     lines.push("history:");
     for (let item of data.history) {
@@ -197,7 +197,7 @@ function parseInlineMarkdown(text) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
-  
+
   // Bold
   html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/__(.*?)__/g, "<strong>$1</strong>");
@@ -208,7 +208,7 @@ function parseInlineMarkdown(text) {
   html = html.replace(/`(.*?)`/g, "<code>$1</code>");
   // Links
   html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-  
+
   return html;
 }
 
@@ -217,14 +217,14 @@ function renderTable(rows) {
   if (rows.length === 0) return "";
   let html = "<table>";
   let hasHeader = false;
-  
+
   if (rows.length > 1) {
     const secondRowClean = rows[1].replace(/[\s|:-]/g, "");
     if (secondRowClean === "") {
       hasHeader = true;
     }
   }
-  
+
   const parseRowCells = (rowStr) => {
     const parts = rowStr.split("|");
     if (parts.length > 1) {
@@ -233,7 +233,7 @@ function renderTable(rows) {
     }
     return parts.map(cell => parseInlineMarkdown(cell.trim()));
   };
-  
+
   if (hasHeader) {
     html += "<thead><tr>";
     const headerCells = parseRowCells(rows[0]);
@@ -262,7 +262,7 @@ function renderTable(rows) {
     }
     html += "</tbody>";
   }
-  
+
   html += "</table>";
   return html;
 }
@@ -270,16 +270,16 @@ function renderTable(rows) {
 // Main Custom Markdown to HTML Compiler
 function parseMarkdownToHTML(bodyText, historyData, globalLineIndexOffset) {
   const lines = bodyText.split(/\r?\n/);
-  
+
   // 1. Group lines into segments (headings, separators, or general text)
   const segments = [];
   let currentTextSegment = null;
-  
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
     const globalLineIndex = i + globalLineIndexOffset;
-    
+
     if (trimmed === "<<hr>>") {
       if (currentTextSegment) {
         segments.push(currentTextSegment);
@@ -299,17 +299,17 @@ function parseMarkdownToHTML(bodyText, historyData, globalLineIndexOffset) {
       currentTextSegment.lines.push({ text: line, lineIndex: globalLineIndex });
     }
   }
-  
+
   if (currentTextSegment) {
     segments.push(currentTextSegment);
   }
-  
+
   // 2. Compile segments to HTML
   let html = "";
-  
+
   for (let j = 0; j < segments.length; j++) {
     const seg = segments[j];
-    
+
     if (seg.type === 'heading') {
       const headingMatch = seg.text.match(/^(#{1,6})\s+(.*)$/);
       const level = headingMatch[1].length;
@@ -323,9 +323,9 @@ function parseMarkdownToHTML(bodyText, historyData, globalLineIndexOffset) {
       const prevSeg = segments[j - 1];
       const nextSeg = segments[j + 1];
       const isCard = (prevSeg && prevSeg.type === 'separator') || (nextSeg && nextSeg.type === 'separator');
-      
+
       const segmentHtml = compileTextLines(seg.lines, historyData);
-      
+
       if (isCard) {
         html += `<div class="todont-card">${segmentHtml}</div>`;
       } else {
@@ -333,7 +333,7 @@ function parseMarkdownToHTML(bodyText, historyData, globalLineIndexOffset) {
       }
     }
   }
-  
+
   return html;
 }
 
@@ -345,7 +345,7 @@ function compileTextLines(linesObj, historyData) {
   let tableRows = [];
   let inParagraph = false;
   let paragraphLines = [];
-  
+
   function closeActiveBlocks() {
     let blockHtml = "";
     if (inList) {
@@ -364,35 +364,35 @@ function compileTextLines(linesObj, historyData) {
     }
     return blockHtml;
   }
-  
+
   for (let i = 0; i < linesObj.length; i++) {
     const lineObj = linesObj[i];
     const line = lineObj.text;
     const trimmed = line.trim();
     const globalLineIndex = lineObj.lineIndex;
-    
+
     // Horizontal Rule
     if (trimmed.match(/^(?:-{3,}|\*{3,}|_{3,})$/) || trimmed === "<hr>") {
       html += closeActiveBlocks();
       html += "<hr>";
       continue;
     }
-    
+
     // Custom Task Checkboxes
     const recMatch = line.match(/^\s*-\s+<<\[([ xX])\]>>\s+(.*)$/);
     const persMatch = line.match(/^\s*-\s+<\[([ xX])\]>\s+(.*)$/);
     const stdMatch = line.match(/^\s*-\s+\[([ xX])\]\s+(.*)$/);
-    
+
     if (recMatch) {
       html += closeActiveBlocks();
       const isChecked = recMatch[1].toLowerCase() === 'x';
       const taskText = recMatch[2];
       const taskId = slugify(taskText);
-      
+
       const historyItem = historyData.find(item => item.id === taskId);
       const streak = historyItem ? historyItem.streak : 0;
       const streakHtml = streak > 0 ? `<span class="streak-display" title="${streak} day streak"><i class="fa-solid fa-fire"></i> ${streak}</span>` : '';
-      
+
       if (isChecked) {
         html += `
           <div class="todont-item recurring-constraint checked read-only" data-line="${globalLineIndex}">
@@ -402,6 +402,9 @@ function compileTextLines(linesObj, historyData) {
             </label>
             <span class="task-text">${parseInlineMarkdown(taskText)}${streakHtml}</span>
             <span class="success-badge">Avoided Today</span>
+            <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
           </div>
         `;
       } else {
@@ -411,13 +414,16 @@ function compileTextLines(linesObj, historyData) {
               <input type="checkbox" data-line="${globalLineIndex}" data-type="recurring">
               <span class="custom-checkbox recurring"></span>
             </label>
-            <span class="task-text">${parseInlineMarkdown(taskText)}${streakHtml}</span>
+            <span class="task-text" contenteditable="true" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>${streakHtml}
+            <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
           </div>
         `;
       }
       continue;
     }
-    
+
     if (persMatch) {
       html += closeActiveBlocks();
       const isChecked = persMatch[1].toLowerCase() === 'x';
@@ -428,12 +434,15 @@ function compileTextLines(linesObj, historyData) {
             <input type="checkbox" ${isChecked ? 'checked' : ''} data-line="${globalLineIndex}" data-type="persistent">
             <span class="custom-checkbox persistent"></span>
           </label>
-          <span class="task-text">${parseInlineMarkdown(taskText)}</span>
+          <span class="task-text" contenteditable="true" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
+          <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
       `;
       continue;
     }
-    
+
     if (stdMatch) {
       html += closeActiveBlocks();
       const isChecked = stdMatch[1].toLowerCase() === 'x';
@@ -444,12 +453,15 @@ function compileTextLines(linesObj, historyData) {
             <input type="checkbox" ${isChecked ? 'checked' : ''} data-line="${globalLineIndex}" data-type="standard">
             <span class="custom-checkbox"></span>
           </label>
-          <span class="task-text">${parseInlineMarkdown(taskText)}</span>
+          <span class="task-text" contenteditable="true" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
+          <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
       `;
       continue;
     }
-    
+
     // Unordered List Items
     const ulMatch = line.match(/^(\s*)[-*+]\s+(.*)$/);
     if (ulMatch) {
@@ -462,7 +474,7 @@ function compileTextLines(linesObj, historyData) {
       html += `<li>${parseInlineMarkdown(ulMatch[2])}</li>`;
       continue;
     }
-    
+
     // Ordered List Items
     const olMatch = line.match(/^(\s*)\d+\.\s+(.*)$/);
     if (olMatch) {
@@ -475,7 +487,7 @@ function compileTextLines(linesObj, historyData) {
       html += `<li>${parseInlineMarkdown(olMatch[2])}</li>`;
       continue;
     }
-    
+
     // Table Rows
     const tableMatch = line.match(/^\s*\|(.*)\|\s*$/);
     if (tableMatch) {
@@ -487,7 +499,7 @@ function compileTextLines(linesObj, historyData) {
       tableRows.push(line);
       continue;
     }
-    
+
     // Blockquotes
     const quoteMatch = line.match(/^\s*>\s*(.*)$/);
     if (quoteMatch) {
@@ -495,13 +507,13 @@ function compileTextLines(linesObj, historyData) {
       html += `<blockquote>${parseInlineMarkdown(quoteMatch[1])}</blockquote>`;
       continue;
     }
-    
+
     // Blank lines
     if (trimmed === "") {
       html += closeActiveBlocks();
       continue;
     }
-    
+
     // Paragraph content accumulation
     if (inList || inTable) {
       html += closeActiveBlocks();
@@ -512,7 +524,7 @@ function compileTextLines(linesObj, historyData) {
     }
     paragraphLines.push(trimmed);
   }
-  
+
   html += closeActiveBlocks();
   return html;
 }
@@ -520,10 +532,10 @@ function compileTextLines(linesObj, historyData) {
 // Core Data Synchronization Pipeline
 function loadDataFromMarkdown(markdown) {
   AppState.rawMarkdown = markdown;
-  
+
   const yamlRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
   const match = markdown.match(yamlRegex);
-  
+
   let yamlText = "";
   if (match) {
     yamlText = match[1];
@@ -539,14 +551,14 @@ function loadDataFromMarkdown(markdown) {
     AppState.history = [];
     AppState.bodyText = markdown;
     AppState.yamlLinesCount = 0;
-    
+
     // Prefix YAML
     AppState.rawMarkdown = stringifyYAML({ profile: AppState.profile, history: AppState.history }) + "\n" + markdown;
-    
+
     const rematch = AppState.rawMarkdown.match(yamlRegex);
     AppState.yamlLinesCount = rematch[0].split('\n').length - 1;
   }
-  
+
   if (yamlText) {
     const yamlData = parseYAML(yamlText);
     AppState.profile = yamlData.profile;
@@ -586,14 +598,58 @@ function updateHeaderStats() {
   }
 }
 
+// Helper to replace text beside check box prefixes in markdown lines
+function updateMarkdownLineText(lineText, newText) {
+  const match = lineText.match(/^(\s*-\s+<<\[[ xX]\]>>\s+)(.*)$/) ||
+    lineText.match(/^(\s*-\s+<\[[ xX]\]>\s+)(.*)$/) ||
+    lineText.match(/^(\s*-\s+\[[ xX]\]\s+)(.*)$/);
+  if (match) {
+    return match[1] + newText;
+  }
+  return lineText;
+}
+
 // Render the Interactive UI view
 function renderInteractiveView() {
   const container = document.getElementById('interactive-view');
   if (!container) return;
-  
-  const parsedHtml = parseMarkdownToHTML(AppState.bodyText, AppState.history, AppState.yamlLinesCount);
+
+  let parsedHtml = parseMarkdownToHTML(AppState.bodyText, AppState.history, AppState.yamlLinesCount);
+
+  // If parsed HTML has no content, replace with simple description
+  const cleaned = parsedHtml.trim();
+  if (cleaned === "" || cleaned === "<div class=\"empty-state\"></div>") {
+    parsedHtml = `
+      <div class="empty-state">
+        <p>No tasks rendered. Click "Add Task" below or type in the Live Editor to get started.</p>
+      </div>
+    `;
+  }
+
+  // Append add task trigger button and popup selection menu at the bottom
+  parsedHtml += `
+    <div class="add-task-outer-container">
+      <div class="add-task-container">
+        <button id="add-task-trigger" class="add-task-trigger-btn" title="Add Constraint Task">
+          <i class="fa-solid fa-plus"></i> Add Task
+        </button>
+        <div id="add-task-menu" class="add-task-menu hidden">
+          <button class="add-menu-item" data-type="standard">
+            <span class="custom-checkbox-preview standard"></span> Regular<code>- [ ]</code>
+          </button>
+          <button class="add-menu-item" data-type="persistent">
+            <span class="custom-checkbox-preview persistent"></span> Persistent <code>- &lt;[ ]&gt;</code>
+          </button>
+          <button class="add-menu-item" data-type="recurring">
+            <span class="custom-checkbox-preview recurring"></span> Daily <code>- &lt;&lt;[ ]&gt;&gt;</code>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
   container.innerHTML = parsedHtml;
-  
+
   // Reattach Checkbox Change Listeners
   const checkboxes = container.querySelectorAll('.checkbox-container input');
   checkboxes.forEach(checkbox => {
@@ -605,13 +661,13 @@ function renderInteractiveView() {
 function updateEditorTextarea() {
   const editor = document.getElementById('markdown-editor');
   if (!editor) return;
-  
+
   const start = editor.selectionStart;
   const end = editor.selectionEnd;
   const scrollPos = editor.scrollTop;
-  
+
   editor.value = AppState.rawMarkdown;
-  
+
   editor.setSelectionRange(start, end);
   editor.scrollTop = scrollPos;
 }
@@ -622,10 +678,10 @@ function handleCheckboxChange(e) {
   const lineIndex = parseInt(checkbox.dataset.line, 10);
   const type = checkbox.dataset.type;
   const checked = checkbox.checked;
-  
+
   const lines = AppState.rawMarkdown.split(/\r?\n/);
   const lineText = lines[lineIndex];
-  
+
   if (type === 'standard') {
     if (checked) {
       lines[lineIndex] = lineText.replace(/^(\s*-\s+\[)[ xX](\]\s+.*)$/, '$1x$2');
@@ -641,10 +697,10 @@ function handleCheckboxChange(e) {
   } else if (type === 'recurring') {
     if (checked) {
       lines[lineIndex] = lineText.replace(/^(\s*-\s+<<\[)[ xX](\]>>\s+.*)$/, '$1x$2');
-      
+
       // Increment successes
       AppState.profile.total_successes += 1;
-      
+
       // Extract task name to resolve history streak
       const taskTextMatch = lineText.match(/^\s*-\s+<<\[[ xX]\]>>\s+(.*)$/);
       if (taskTextMatch) {
@@ -652,7 +708,7 @@ function handleCheckboxChange(e) {
         const taskId = slugify(taskText);
         let historyItem = AppState.history.find(h => h.id === taskId);
         const now = new Date();
-        
+
         if (!historyItem) {
           historyItem = {
             id: taskId,
@@ -676,10 +732,10 @@ function handleCheckboxChange(e) {
       showToast("🎉 Awesome! Daily constraint avoided successfully.", "success");
     }
   }
-  
+
   // Recompile whole raw Markdown
   AppState.rawMarkdown = lines.join('\n');
-  
+
   // If recurring task was updated, serialize the altered stats back into the YAML front matter
   if (type === 'recurring' && checked) {
     const yamlRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
@@ -691,7 +747,7 @@ function handleCheckboxChange(e) {
     const newYamlHeader = stringifyYAML({ profile: AppState.profile, history: AppState.history });
     AppState.rawMarkdown = newYamlHeader + "\n" + bodyText;
   }
-  
+
   // Refresh internal data states, save to storage, redraw editor and UI
   loadDataFromMarkdown(AppState.rawMarkdown);
   syncSaveState();
@@ -704,11 +760,11 @@ function handleCheckboxChange(e) {
 function checkDayFlip() {
   const lastSynced = AppState.profile.global_last_synced;
   if (!lastSynced) return;
-  
+
   if (hasCalendarDayFlipped(lastSynced)) {
     let lines = AppState.rawMarkdown.split(/\r?\n/);
     let changed = false;
-    
+
     // 1. Reset all recurring checked tasks back to unchecked
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -718,7 +774,7 @@ function checkDayFlip() {
         changed = true;
       }
     }
-    
+
     // 2. Break streaks for daily constraints that were not checked yesterday
     const today = new Date();
     for (let item of AppState.history) {
@@ -727,10 +783,10 @@ function checkDayFlip() {
         item.streak = 0;
       }
     }
-    
+
     // 3. Update global last sync time to today
     AppState.profile.global_last_synced = today.toISOString();
-    
+
     // 4. Join and rebuild markdown
     AppState.rawMarkdown = lines.join('\n');
     const yamlRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
@@ -741,7 +797,7 @@ function checkDayFlip() {
     }
     const newYamlHeader = stringifyYAML({ profile: AppState.profile, history: AppState.history });
     AppState.rawMarkdown = newYamlHeader + "\n" + bodyText;
-    
+
     // Save state
     syncSaveState();
     showToast("📅 New calendar day detected. Daily constraints reset!", "info");
@@ -752,7 +808,7 @@ function checkDayFlip() {
 function triggerBackupReminder() {
   // Update timestamp first
   AppState.profile.global_last_synced = new Date().toISOString();
-  
+
   // Re-serialize YAML front matter
   const yamlRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
   const match = AppState.rawMarkdown.match(yamlRegex);
@@ -762,37 +818,37 @@ function triggerBackupReminder() {
   }
   const newYamlHeader = stringifyYAML({ profile: AppState.profile, history: AppState.history });
   AppState.rawMarkdown = newYamlHeader + "\n" + bodyText;
-  
+
   // Save, update editor textarea, update status bar
   syncSaveState();
   updateEditorTextarea();
   updateStatusBar();
-  
+
   // Show center toast
-  showToast("💾 Reminder: Export your Markdown file to back up your habits offline!", "info");
+  showToast("Reminder: Export your Markdown file to back up your habits offline!", "info");
 }
 
 // Toast rendering system
 function showToast(message, type = "info") {
   const container = document.getElementById('toast-container');
   if (!container) return;
-  
+
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
-  
+
   let iconHtml = '<i class="fa-solid fa-bell"></i>';
   if (type === "success") iconHtml = '<i class="fa-solid fa-circle-check"></i>';
   else if (type === "error") iconHtml = '<i class="fa-solid fa-circle-xmark"></i>';
   else if (type === "info") iconHtml = '<i class="fa-solid fa-circle-info"></i>';
-  
+
   toast.innerHTML = `
     <span class="toast-icon">${iconHtml}</span>
     <span class="toast-message">${message}</span>
     <button class="toast-close-btn" aria-label="Close reminder">&times;</button>
   `;
-  
+
   container.appendChild(toast);
-  
+
   // Close handler
   const closeBtn = toast.querySelector('.toast-close-btn');
   closeBtn.addEventListener('click', () => {
@@ -801,7 +857,7 @@ function showToast(message, type = "info") {
       toast.remove();
     }, 200);
   });
-  
+
   // Auto remove after 5 seconds (matching keyframe timings)
   setTimeout(() => {
     if (toast.parentNode) {
@@ -814,7 +870,7 @@ function showToast(message, type = "info") {
 function exportBackup() {
   // Update global timestamp
   AppState.profile.global_last_synced = new Date().toISOString();
-  
+
   // Re-serialize YAML
   const yamlRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
   const match = AppState.rawMarkdown.match(yamlRegex);
@@ -824,26 +880,26 @@ function exportBackup() {
   }
   const newYamlHeader = stringifyYAML({ profile: AppState.profile, history: AppState.history });
   AppState.rawMarkdown = newYamlHeader + "\n" + bodyText;
-  
+
   // Save state locally
   syncSaveState();
   updateEditorTextarea();
   updateStatusBar();
-  
+
   // Create download link
   const blob = new Blob([AppState.rawMarkdown], { type: 'text/markdown;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  
+
   const dateStr = getLocalDateString(new Date()).replace(/-/g, '_');
   a.download = `todont_backup_${dateStr}.md`;
-  
+
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  
+
   showToast("💾 Backup downloaded successfully!", "success");
 }
 
@@ -851,22 +907,22 @@ function exportBackup() {
 function handleImportFile(e) {
   const file = e.target.files[0];
   if (!file) return;
-  
+
   const reader = new FileReader();
-  reader.onload = function(evt) {
+  reader.onload = function (evt) {
     const text = evt.target.result;
     try {
       // Validate structure before writing
       loadDataFromMarkdown(text);
       checkDayFlip();
       syncSaveState();
-      
+
       // Update UI Views
       const editor = document.getElementById('markdown-editor');
       if (editor) editor.value = AppState.rawMarkdown;
       renderInteractiveView();
       updateHeaderStats();
-      
+
       showToast("🔄 Data imported successfully!", "success");
     } catch (err) {
       console.error(err);
@@ -874,7 +930,7 @@ function handleImportFile(e) {
     }
   };
   reader.readAsText(file);
-  
+
   // Clear file input
   e.target.value = "";
 }
@@ -883,13 +939,13 @@ function handleImportFile(e) {
 function initTheme() {
   const themeToggleBtn = document.getElementById('theme-toggle');
   const themeToggleIcon = document.getElementById('theme-toggle-icon');
-  
+
   const getPreferredTheme = () => {
     const saved = localStorage.getItem('todont_theme');
     if (saved) return saved;
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   };
-  
+
   const setTheme = (theme) => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('todont_theme', theme);
@@ -897,9 +953,9 @@ function initTheme() {
       themeToggleIcon.innerHTML = theme === 'dark' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
     }
   };
-  
+
   setTheme(getPreferredTheme());
-  
+
   if (themeToggleBtn) {
     themeToggleBtn.addEventListener('click', () => {
       const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -955,14 +1011,14 @@ function initAppListeners() {
       updateHeaderStats();
     });
   }
-  
+
   // Inline Username Editor
   const usernameInput = document.getElementById('username-input');
   if (usernameInput) {
     usernameInput.addEventListener('change', (e) => {
       const newUsername = e.target.value.trim() || "Anonymous";
       AppState.profile.username = newUsername;
-      
+
       // Re-serialize
       const yamlRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
       const match = AppState.rawMarkdown.match(yamlRegex);
@@ -972,24 +1028,246 @@ function initAppListeners() {
       }
       const newYamlHeader = stringifyYAML({ profile: AppState.profile, history: AppState.history });
       AppState.rawMarkdown = newYamlHeader + "\n" + bodyText;
-      
+
       syncSaveState();
       updateEditorTextarea();
     });
   }
-  
+
   // File Import Button
   const fileInput = document.getElementById('import-file');
   if (fileInput) {
     fileInput.addEventListener('change', handleImportFile);
   }
-  
+
   // Export Button
   const exportBtn = document.getElementById('export-btn');
   if (exportBtn) {
     exportBtn.addEventListener('click', exportBackup);
   }
-  
+
+  // Clear All Button (removes all body tasks but preserves YAML profile/history)
+  const clearAllBtn = document.getElementById('clear-all-btn');
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener('click', () => {
+      if (confirm("Are you sure you want to clear all tasks? Your YAML profile metadata and streak history will be preserved.")) {
+        const yamlRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
+        const match = AppState.rawMarkdown.match(yamlRegex);
+        if (match) {
+          AppState.rawMarkdown = match[0] + "\n";
+        } else {
+          AppState.rawMarkdown = "";
+        }
+        loadDataFromMarkdown(AppState.rawMarkdown);
+        renderInteractiveView();
+        updateHeaderStats();
+        syncSaveState();
+        updateEditorTextarea();
+      }
+    });
+  }
+
+  // Interactive View Task Adding & Editing Event Delegation
+  const interactiveView = document.getElementById('interactive-view');
+  if (interactiveView) {
+    // 0. Click on "x" button to delete task
+    interactiveView.addEventListener('click', (e) => {
+      const deleteBtn = e.target.closest('.delete-task-btn');
+      if (deleteBtn) {
+        const lineIndex = parseInt(deleteBtn.dataset.line, 10);
+        const lines = AppState.rawMarkdown.split(/\r?\n/);
+        
+        if (lines[lineIndex] !== undefined) {
+          lines.splice(lineIndex, 1);
+          AppState.rawMarkdown = lines.join('\n');
+          
+          loadDataFromMarkdown(AppState.rawMarkdown);
+          renderInteractiveView();
+          updateHeaderStats();
+          syncSaveState();
+          updateEditorTextarea();
+        }
+        e.stopPropagation();
+      }
+    });
+
+    // 1. Toggle add task menu
+    interactiveView.addEventListener('click', (e) => {
+      const trigger = e.target.closest('#add-task-trigger');
+      if (trigger) {
+        const menu = document.getElementById('add-task-menu');
+        if (menu) menu.classList.toggle('hidden');
+        e.stopPropagation();
+      }
+    });
+
+    // 2. Click on menu item to add task
+    interactiveView.addEventListener('click', (e) => {
+      const menuItem = e.target.closest('.add-menu-item');
+      if (menuItem) {
+        const type = menuItem.dataset.type;
+        const lines = AppState.rawMarkdown.split(/\r?\n/);
+
+        // Find the index of the last non-empty line
+        let lastIndex = lines.length - 1;
+        while (lastIndex >= 0 && lines[lastIndex].trim() === "" && lastIndex > AppState.yamlLinesCount) {
+          lastIndex--;
+        }
+
+        let prefix = "- [ ] ";
+        let defaultText = "New Task";
+        if (type === 'persistent') {
+          prefix = "- <[ ]> ";
+          defaultText = "New Habit";
+        } else if (type === 'recurring') {
+          prefix = "- <<[ ]>> ";
+          defaultText = "New Daily Constraint";
+        }
+
+        lines.splice(lastIndex + 1, 0, prefix + defaultText);
+        AppState.rawMarkdown = lines.join('\n');
+
+        // Reload and re-render
+        loadDataFromMarkdown(AppState.rawMarkdown);
+        renderInteractiveView();
+        updateHeaderStats();
+        syncSaveState();
+        updateEditorTextarea();
+
+        // Focus the new task text
+        setTimeout(() => {
+          const newEl = document.querySelector(`.task-text[data-line="${lastIndex + 1}"]`);
+          if (newEl) {
+            newEl.focus();
+            const range = document.createRange();
+            range.selectNodeContents(newEl);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+          }
+        }, 50);
+
+        e.stopPropagation();
+      }
+    });
+
+    // 3. Inline editable text updates on input (silent sync)
+    interactiveView.addEventListener('input', (e) => {
+      if (e.target.classList.contains('task-text') && e.target.hasAttribute('contenteditable')) {
+        const lineIndex = parseInt(e.target.dataset.line, 10);
+        const newText = e.target.textContent;
+        const lines = AppState.rawMarkdown.split(/\r?\n/);
+
+        if (lines[lineIndex] !== undefined) {
+          lines[lineIndex] = updateMarkdownLineText(lines[lineIndex], newText);
+          AppState.rawMarkdown = lines.join('\n');
+
+          const yamlRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
+          const match = AppState.rawMarkdown.match(yamlRegex);
+          if (match) {
+            AppState.bodyText = AppState.rawMarkdown.substring(match[0].length);
+          } else {
+            AppState.bodyText = AppState.rawMarkdown;
+          }
+
+          localStorage.setItem('todont_markdown', AppState.rawMarkdown);
+          updateEditorTextarea();
+        }
+      }
+    });
+
+    // 4. Blur event on text updates (recompile full preview)
+    interactiveView.addEventListener('blur', (e) => {
+      if (e.target.classList.contains('task-text') && e.target.hasAttribute('contenteditable')) {
+        loadDataFromMarkdown(AppState.rawMarkdown);
+        renderInteractiveView();
+        updateHeaderStats();
+        syncSaveState();
+      }
+    }, true); // Capture phase required for blur
+
+    // 5. Keydown handlers (Enter to add, Backspace to delete empty task)
+    interactiveView.addEventListener('keydown', (e) => {
+      if (e.target.classList.contains('task-text') && e.target.hasAttribute('contenteditable')) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+
+          const lineIndex = parseInt(e.target.dataset.line, 10);
+          const lines = AppState.rawMarkdown.split(/\r?\n/);
+          const currentLine = lines[lineIndex];
+
+          let prefix = "- [ ] ";
+          let defaultText = "New Task";
+          if (currentLine.includes("- <[")) {
+            prefix = "- <[ ]> ";
+            defaultText = "New Habit";
+          } else if (currentLine.includes("- <<[")) {
+            prefix = "- <<[ ]>> ";
+            defaultText = "New Daily Constraint";
+          }
+
+          lines.splice(lineIndex + 1, 0, prefix + defaultText);
+          AppState.rawMarkdown = lines.join('\n');
+
+          loadDataFromMarkdown(AppState.rawMarkdown);
+          renderInteractiveView();
+          updateHeaderStats();
+          syncSaveState();
+          updateEditorTextarea();
+
+          setTimeout(() => {
+            const nextEl = document.querySelector(`.task-text[data-line="${lineIndex + 1}"]`);
+            if (nextEl) {
+              nextEl.focus();
+              const range = document.createRange();
+              range.selectNodeContents(nextEl);
+              const sel = window.getSelection();
+              sel.removeAllRanges();
+              sel.addRange(range);
+            }
+          }, 50);
+        } else if (e.key === 'Backspace' && e.target.textContent === '') {
+          e.preventDefault();
+
+          const lineIndex = parseInt(e.target.dataset.line, 10);
+          const lines = AppState.rawMarkdown.split(/\r?\n/);
+
+          lines.splice(lineIndex, 1);
+          AppState.rawMarkdown = lines.join('\n');
+
+          loadDataFromMarkdown(AppState.rawMarkdown);
+          renderInteractiveView();
+          updateHeaderStats();
+          syncSaveState();
+          updateEditorTextarea();
+
+          setTimeout(() => {
+            const editableSpans = Array.from(document.querySelectorAll('.task-text[contenteditable="true"]'));
+            const prevEl = editableSpans.reverse().find(span => parseInt(span.dataset.line, 10) < lineIndex);
+            if (prevEl) {
+              prevEl.focus();
+              const range = document.createRange();
+              range.selectNodeContents(prevEl);
+              range.collapse(false);
+              const sel = window.getSelection();
+              sel.removeAllRanges();
+              sel.addRange(range);
+            }
+          }, 50);
+        }
+      }
+    });
+  }
+
+  // Close add task menu when clicking outside
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('add-task-menu');
+    const trigger = e.target.closest('#add-task-trigger');
+    if (menu && !menu.classList.contains('hidden') && !trigger && !menu.contains(e.target)) {
+      menu.classList.add('hidden');
+    }
+  });
+
   // Set up 5-minute backup reminder interval
   setInterval(() => {
     triggerBackupReminder();
@@ -1000,7 +1278,7 @@ function initAppListeners() {
 function initPWAPrompts() {
   let deferredPrompt;
   const installBtn = document.getElementById('install-btn');
-  
+
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
@@ -1008,7 +1286,7 @@ function initPWAPrompts() {
       installBtn.classList.remove('hidden');
     }
   });
-  
+
   if (installBtn) {
     installBtn.addEventListener('click', () => {
       installBtn.classList.add('hidden');
@@ -1023,7 +1301,7 @@ function initPWAPrompts() {
       });
     });
   }
-  
+
   window.addEventListener('appinstalled', () => {
     if (installBtn) {
       installBtn.classList.add('hidden');
@@ -1066,7 +1344,7 @@ function boot() {
   initAppListeners();
   initPWAPrompts();
   registerServiceWorker();
-  
+
   // Load Markdown data
   const cachedMarkdown = localStorage.getItem('todont_markdown');
   if (cachedMarkdown) {
@@ -1075,10 +1353,10 @@ function boot() {
     loadDataFromMarkdown(DEFAULT_MARKDOWN);
     syncSaveState();
   }
-  
+
   // Run calendar day checks
   checkDayFlip();
-  
+
   // Render views
   const editor = document.getElementById('markdown-editor');
   if (editor) {
@@ -1087,6 +1365,17 @@ function boot() {
   renderInteractiveView();
   updateHeaderStats();
   updateStatusBar();
+
+  // Dismiss preloader with a faded smooth transition
+  const preloader = document.getElementById('app-preloader');
+  if (preloader) {
+    setTimeout(() => {
+      preloader.classList.add('fade-out');
+      setTimeout(() => {
+        preloader.remove();
+      }, 500); // Wait for transition duration (500ms)
+    }, 800); // Show splash preloader for 800ms
+  }
 }
 
 // Boot up app on DOM load completion
