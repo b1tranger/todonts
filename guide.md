@@ -12,11 +12,11 @@ To-Don't lets you write your constraints using standard Markdown syntax inside t
 
 ### 1. Standard Tasks (`- [ ]`)
 - **Syntax**: `- [ ] Don't eat fast food`
-- **Behavior**: A simple one-time constraint task. When checked, it awards a random amount of success points (+1 to +2 points), strikes through, and moves dynamically to the bottom of its checkbox chunk under a `<hr>` divider. Unchecking it moves it back to the active section above the divider.
+- **Behavior**: A simple one-time constraint task. When checked, it awards a random amount of success points (+1 to +2 points), strikes through, moves dynamically to the bottom of its checkbox chunk under a `<hr>` divider, and becomes locked (cannot be unchecked in the Interactive View). Unchecking it manually in the editor moves it back up into the active section.
 
 ### 2. Persistent Habits (`- <[ ]>`)
 - **Syntax**: `- <[ ]> Don't check social media before noon`
-- **Behavior**: An ongoing constraint. When checked, it awards +1 to +5 success points, strikes through, and greys out, but stays active and interactive so you can uncheck it later if needed.
+- **Behavior**: An ongoing constraint. When checked, it awards +1 to +5 success points, strikes through, and greys out. A 6-hour cooldown timer badge displays at the top-right corner, and the checkbox is locked (disabled). Once the 6-hour cooldown is over, the task automatically resets to unchecked, becomes active/interactive again, and schedules a browser push notification to alert you. When unchecked, no cooldown timer is shown.
 
 ### 3. Daily Recurring Constraints (`- <<[ ]>>`)
 - **Syntax**: `- <<[ ]>> Don't drink soda today`

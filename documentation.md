@@ -35,8 +35,8 @@ The custom parser split-compiles the document body:
 - **Heading block boundaries**: Heading tokens (`#` to `######`) close wrapping layouts.
 - **Card Separators (`<<hr>>`)**: Segment-based groupings wrap adjacent text nodes in a `.todont-card` container class.
 - **Checkbox Tokenizer**:
-  - `- [ ]` $\rightarrow$ Standard task (checked: `- [x]`). When checked, it moves to the bottom of its contiguous checkbox chunk under a `<hr>` divider, and awards +1 to +2 success points.
-  - `- <[ ]>` $\rightarrow$ Persistent habit (checked: `- <[x]>`). Stays active across days and awards +1 to +5 success points on check.
+  - `- [ ]` $\rightarrow$ Standard task (checked: `- [x]`). When checked, it moves to the bottom of its contiguous checkbox chunk under a `<hr>` divider, awards +1 to +2 success points, and is locked from being unchecked in the Interactive View.
+  - `- <[ ]>` $\rightarrow$ Persistent habit (checked: `- <[x]>`). Stays active across days and awards +1 to +5 success points on check. A 6-hour cooldown applies upon checking before it can be checked again, showing a countdown badge and triggering a push notification upon completion.
   - `- <<[ ]>>` $\rightarrow$ Recurring daily constraint (checked: `- <<[x]>>`). Increments streak, awards +1 to +9 success points, and locks to read-only.
 
 ---
@@ -46,7 +46,10 @@ The custom parser split-compiles the document body:
 ### v1.4.0 (Current)
 - **Feature**: Success point system. Award random points on check (Standard: 1–2, Persistent: 1–5, Daily Recurring: 1–9) with a floating "+X Points!" text animation.
 - **Feature**: Clickable Successes badge in the header that slides up a points distribution explanation bottom sheet modal.
-- **Feature**: Checkbox chunk reordering engine. Checking a standard task (`- [ ]`) moves it to the bottom of its contiguous chunk under a `<hr>` divider. Unchecking it moves it back up.
+- **Feature**: Checkbox chunk reordering engine. Checking a standard task (`- [ ]`) moves it to the bottom of its contiguous chunk under a `<hr>` divider.
+- **Feature**: Enforced unchecking restrictions. Standard tasks (`- [ ]`) cannot be unchecked from the Interactive View once checked.
+- **Feature**: Implemented a 6-hour cooldown on persistent habits (`- <[ ]>`) after checking. Displays a countdown timer badge (`Cooldown: Xh Ym`) and disables the checkbox during the cooldown.
+- **Feature**: Push notifications support via Web Notifications API to alert users the moment their habit cooldown expires.
 - **Enhancement**: Fixed auto-rotation on mobile devices by locking PWA launch configuration to portrait mode inside `manifest.json`.
 
 ### v1.3.1

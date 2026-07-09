@@ -585,6 +585,7 @@ body {
 
 /* Checkbox and Task Item Styling */
 .todont-item {
+  position: relative; /* Ensure relative reference for absolute children */
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
@@ -704,15 +705,38 @@ body {
 }
 
 /* Streak and Badges */
-.success-badge {
-  font-size: 0.7rem;
-  padding: 0.2rem 0.5rem;
-  background-color: rgba(16, 185, 129, 0.1);
-  color: var(--accent-success);
+/* Success and Cooldown Badges Floating Over Top-Right Border */
+.success-badge,
+.cooldown-badge {
+  position: absolute;
+  top: -8px; /* Partially overlay the top border */
+  right: 2.2rem; /* Position to the left of the delete button */
+  margin: 0 !important;
+  z-index: 10;
+  font-size: 0.65rem;
+  padding: 0.15rem 0.45rem;
   border-radius: 4px;
   font-weight: 600;
-  margin-left: auto;
-  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: var(--bg-pane); /* Match container background to mask border line */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.success-badge {
+  color: var(--accent-success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.cooldown-badge {
+  color: #D97706;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
+[data-theme="dark"] .cooldown-badge {
+  color: #FBBF24;
+  border-color: rgba(251, 191, 36, 0.3);
 }
 
 .streak-display {
@@ -1257,6 +1281,31 @@ body {
   color: #EF4444;
 }
 
+/* Undo Button in Pane Header */
+.btn-undo {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.btn-undo:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: #3B82F6;
+  color: #3B82F6;
+}
+
+.btn-undo:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 /* Delete Task ("x") Button on each task item */
 .todont-item {
   padding-right: 2.75rem !important; /* Make room for absolute positioned delete button */
@@ -1271,8 +1320,7 @@ body {
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0.5;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -1282,14 +1330,9 @@ body {
 }
 
 .delete-task-btn:hover {
+  opacity: 1;
   color: #EF4444;
   background-color: rgba(239, 68, 68, 0.1);
-}
-
-.todont-item:hover .delete-task-btn,
-.todont-item:focus-within .delete-task-btn {
-  opacity: 1;
-  pointer-events: auto;
 }
 
 /* Preloader / Splash Screen */
@@ -1561,3 +1604,5 @@ button.stat-badge:active {
     transform: translate(-50%, -60px) scale(1);
   }
 }
+
+/* Cooldown badge styles moved up */

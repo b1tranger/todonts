@@ -13,7 +13,8 @@ const AppState = {
   },
   history: [],
   bodyText: "",
-  yamlLinesCount: 0
+  yamlLinesCount: 0,
+  undoStack: []
 };
 
 // Default Markdown Template
@@ -400,7 +401,7 @@ function compileTextLines(linesObj, historyData) {
         html += `
           <div class="todont-item recurring-constraint checked read-only" data-line="${globalLineIndex}">
             <label class="checkbox-container">
-              <input type="checkbox" checked disabsled data-line="${globalLineIndex}" data-type="recurring">
+              <input type="checkbox" checked disabled data-line="${globalLineIndex}" data-type="recurring">
               <span class="custom-checkbox recurring"></span>
             </label>
             <span class="task-text ${placeholderClass}" data-placeholder="forgo New Daily Constraint" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}${streakHtml}</span>
@@ -433,13 +434,37 @@ function compileTextLines(linesObj, historyData) {
       const taskText = persMatch[2];
       const isPlaceholder = (taskText.trim().toLowerCase() === "don't");
       const placeholderClass = isPlaceholder ? 'show-placeholder' : '';
+
+      // Cooldown calculation — only applies when task is CHECKED
+      const taskId = slugify(taskText);
+      const historyItem = historyData.find(item => item.id === taskId);
+      let onCooldown = false;
+      let cooldownTimeStr = "";
+      if (isChecked && historyItem && historyItem.last_checked) {
+        const lastCheckedDate = new Date(historyItem.last_checked);
+        const now = new Date();
+        const diffMs = now - lastCheckedDate;
+        const cooldownMs = 6 * 60 * 60 * 1000; // 6 hours
+        if (diffMs < cooldownMs) {
+          onCooldown = true;
+          const remainingMs = cooldownMs - diffMs;
+          const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+          const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+          cooldownTimeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+        }
+      }
+
+      const cooldownHtml = onCooldown ? `<span class="cooldown-badge" title="6-hour cooldown active"><i class="fa-solid fa-hourglass-half"></i> Cooldown: ${cooldownTimeStr}</span>` : '';
+      const disabledAttr = onCooldown ? 'disabled' : '';
+
       html += `
-        <div class="todont-item persistent-habit ${isChecked ? 'checked' : ''}" data-line="${globalLineIndex}">
+        <div class="todont-item persistent-habit ${isChecked ? 'checked' : ''} ${onCooldown ? 'read-only' : ''}" data-line="${globalLineIndex}">
           <label class="checkbox-container">
-            <input type="checkbox" ${isChecked ? 'checked' : ''} data-line="${globalLineIndex}" data-type="persistent">
+            <input type="checkbox" ${isChecked ? 'checked' : ''} ${disabledAttr} data-line="${globalLineIndex}" data-type="persistent">
             <span class="custom-checkbox persistent"></span>
           </label>
-          <span class="task-text ${placeholderClass}" contenteditable="true" data-placeholder="continue this New Habit" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
+          <span class="task-text ${placeholderClass}" contenteditable="${isChecked ? 'false' : 'true'}" data-placeholder="continue this New Habit" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
+          ${cooldownHtml}
           <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
             <i class="fa-solid fa-xmark"></i>
           </button>
@@ -454,18 +479,33 @@ function compileTextLines(linesObj, historyData) {
       const taskText = stdMatch[2];
       const isPlaceholder = (taskText.trim().toLowerCase() === "don't");
       const placeholderClass = isPlaceholder ? 'show-placeholder' : '';
-      html += `
-        <div class="todont-item standard-task ${isChecked ? 'checked' : ''}" data-line="${globalLineIndex}">
-          <label class="checkbox-container">
-            <input type="checkbox" ${isChecked ? 'checked' : ''} data-line="${globalLineIndex}" data-type="standard">
-            <span class="custom-checkbox"></span>
-          </label>
-          <span class="task-text ${placeholderClass}" contenteditable="true" data-placeholder="do this New Task" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
-          <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-      `;
+      if (isChecked) {
+        html += `
+          <div class="todont-item standard-task checked read-only" data-line="${globalLineIndex}">
+            <label class="checkbox-container">
+              <input type="checkbox" checked disabled data-line="${globalLineIndex}" data-type="standard">
+              <span class="custom-checkbox"></span>
+            </label>
+            <span class="task-text ${placeholderClass}" data-placeholder="do this New Task" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
+            <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        `;
+      } else {
+        html += `
+          <div class="todont-item standard-task" data-line="${globalLineIndex}">
+            <label class="checkbox-container">
+              <input type="checkbox" data-line="${globalLineIndex}" data-type="standard">
+              <span class="custom-checkbox"></span>
+            </label>
+            <span class="task-text ${placeholderClass}" contenteditable="true" data-placeholder="do this New Task" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
+            <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        `;
+      }
       continue;
     }
 
@@ -630,6 +670,127 @@ function showFloatingPoints(points, x, y) {
   });
 }
 
+// Map to track active cooldown timers
+const activeCooldownTimers = new Map();
+
+// Helper: Schedule a push notification for when cooldown completes
+function scheduleCooldownNotification(taskId, taskText, delayMs) {
+  if (activeCooldownTimers.has(taskId)) {
+    clearTimeout(activeCooldownTimers.get(taskId));
+  }
+
+  const timerId = setTimeout(() => {
+    triggerCooldownCompletedNotification(taskText);
+    activeCooldownTimers.delete(taskId);
+    renderInteractiveView(); // Refresh visual status
+  }, delayMs);
+
+  activeCooldownTimers.set(taskId, timerId);
+}
+
+// Helper: Trigger the actual Web Notification
+function triggerCooldownCompletedNotification(taskText) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    new Notification("To-Don't Cooldown Finished", {
+      body: `"${taskText}" is ready to be checked again. Stay strong!`,
+      icon: './icon.svg'
+    });
+  }
+}
+
+// Helper: Scan markdown and initialize cooldown notifications
+function initCooldownNotifications() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+  const lines = AppState.rawMarkdown.split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const persMatch = line.match(/^\s*-\s+<\[([ xX])\]>\s+(.*)$/);
+    if (persMatch) {
+      const isChecked = persMatch[1].toLowerCase() === 'x';
+      const taskText = persMatch[2];
+      
+      if (!isChecked) {
+        const taskId = slugify(taskText);
+        const historyItem = AppState.history.find(item => item.id === taskId);
+        if (historyItem && historyItem.last_checked) {
+          const lastCheckedDate = new Date(historyItem.last_checked);
+          const now = new Date();
+          const diffMs = now - lastCheckedDate;
+          const cooldownMs = 6 * 60 * 60 * 1000;
+          if (diffMs < cooldownMs) {
+            const delayMs = cooldownMs - diffMs;
+            scheduleCooldownNotification(taskId, taskText, delayMs);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Undo stack helpers (max 50 snapshots)
+const MAX_UNDO_STACK = 50;
+
+function pushUndoSnapshot() {
+  AppState.undoStack.push(AppState.rawMarkdown);
+  if (AppState.undoStack.length > MAX_UNDO_STACK) {
+    AppState.undoStack.shift();
+  }
+  updateUndoButton();
+}
+
+function performUndo() {
+  if (AppState.undoStack.length === 0) return;
+  AppState.rawMarkdown = AppState.undoStack.pop();
+  loadDataFromMarkdown(AppState.rawMarkdown);
+  syncSaveState();
+  updateEditorTextarea();
+  renderInteractiveView();
+  updateHeaderStats();
+  updateUndoButton();
+}
+
+function updateUndoButton() {
+  const btn = document.getElementById('undo-btn');
+  if (btn) {
+    btn.disabled = AppState.undoStack.length === 0;
+  }
+}
+
+// Scan and reset persistent habits whose 6-hour cooldown has expired
+function checkPersistentCooldownResets() {
+  let lines = AppState.rawMarkdown.split(/\r?\n/);
+  let changed = false;
+  const cooldownMs = 6 * 60 * 60 * 1000; // 6 hours
+  const now = new Date();
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const persMatch = line.match(/^\s*-\s+<\[([xX])\]>\s+(.*)$/);
+    if (persMatch) {
+      const taskText = persMatch[2];
+      const taskId = slugify(taskText);
+      const historyItem = AppState.history.find(h => h.id === taskId);
+      if (historyItem && historyItem.last_checked) {
+        const lastCheckedDate = new Date(historyItem.last_checked);
+        const diffMs = now - lastCheckedDate;
+        if (diffMs >= cooldownMs) {
+          lines[i] = line.replace(/^(\s*-\s+<\[)[xX](\]>\s+.*)$/, '$1 $2');
+          changed = true;
+        }
+      }
+    }
+  }
+
+  if (changed) {
+    AppState.rawMarkdown = lines.join('\n');
+    loadDataFromMarkdown(AppState.rawMarkdown);
+    syncSaveState();
+    updateEditorTextarea();
+  }
+}
+
 // Render the Interactive UI view
 function renderInteractiveView() {
   const container = document.getElementById('interactive-view');
@@ -695,6 +856,7 @@ function updateEditorTextarea() {
 
 // Checkbox action handler
 function handleCheckboxChange(e) {
+  pushUndoSnapshot();
   const checkbox = e.target;
   const lineIndex = parseInt(checkbox.dataset.line, 10);
   const type = checkbox.dataset.type;
@@ -769,8 +931,45 @@ function handleCheckboxChange(e) {
     if (checked) {
       lines[lineIndex] = lineText.replace(/^(\s*-\s+<\[)[ xX](\]>\s+.*)$/, '$1x$2');
       pointsAwarded = Math.floor(Math.random() * 5) + 1; // 1-5 points
+
+      // Extract task name to resolve history last_checked
+      const taskTextMatch = lineText.match(/^\s*-\s+<\[[ xX]\]>\s+(.*)$/);
+      if (taskTextMatch) {
+        const taskText = taskTextMatch[1].trim();
+        const taskId = slugify(taskText);
+        let historyItem = AppState.history.find(h => h.id === taskId);
+        const now = new Date();
+
+        if (!historyItem) {
+          historyItem = {
+            id: taskId,
+            last_checked: now.toISOString()
+          };
+          AppState.history.push(historyItem);
+        } else {
+          historyItem.last_checked = now.toISOString();
+        }
+      }
     } else {
       lines[lineIndex] = lineText.replace(/^(\s*-\s+<\[)[ xX](\]>\s+.*)$/, '$1 $2');
+
+      // Schedule cooldown notification if they uncheck it within 6 hours of last check
+      const taskTextMatch = lineText.match(/^\s*-\s+<\[[ xX]\]>\s+(.*)$/);
+      if (taskTextMatch) {
+        const taskText = taskTextMatch[1].trim();
+        const taskId = slugify(taskText);
+        const historyItem = AppState.history.find(h => h.id === taskId);
+        if (historyItem && historyItem.last_checked) {
+          const lastCheckedDate = new Date(historyItem.last_checked);
+          const now = new Date();
+          const diffMs = now - lastCheckedDate;
+          const cooldownMs = 6 * 60 * 60 * 1000;
+          if (diffMs < cooldownMs) {
+            const delayMs = cooldownMs - diffMs;
+            scheduleCooldownNotification(taskId, taskText, delayMs);
+          }
+        }
+      }
     }
   } else if (type === 'recurring') {
     if (checked) {
@@ -1013,6 +1212,7 @@ function handleImportFile(e) {
       if (editor) editor.value = AppState.rawMarkdown;
       renderInteractiveView();
       updateHeaderStats();
+      initCooldownNotifications();
 
       showToast("🔄 Data imported successfully!", "success");
     } catch (err) {
@@ -1165,6 +1365,7 @@ function initAppListeners() {
   if (clearAllBtn) {
     clearAllBtn.addEventListener('click', () => {
       if (confirm("Are you sure you want to clear all tasks? Your YAML profile metadata and streak history will be preserved.")) {
+        pushUndoSnapshot();
         const yamlRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
         const match = AppState.rawMarkdown.match(yamlRegex);
         if (match) {
@@ -1181,6 +1382,12 @@ function initAppListeners() {
     });
   }
 
+  // Undo Button
+  const undoBtn = document.getElementById('undo-btn');
+  if (undoBtn) {
+    undoBtn.addEventListener('click', performUndo);
+  }
+
   // Interactive View Task Adding & Editing Event Delegation
   const interactiveView = document.getElementById('interactive-view');
   if (interactiveView) {
@@ -1188,6 +1395,7 @@ function initAppListeners() {
     interactiveView.addEventListener('click', (e) => {
       const deleteBtn = e.target.closest('.delete-task-btn');
       if (deleteBtn) {
+        pushUndoSnapshot();
         const lineIndex = parseInt(deleteBtn.dataset.line, 10);
         const lines = AppState.rawMarkdown.split(/\r?\n/);
 
@@ -1219,6 +1427,7 @@ function initAppListeners() {
     interactiveView.addEventListener('click', (e) => {
       const menuItem = e.target.closest('.add-menu-item');
       if (menuItem) {
+        pushUndoSnapshot();
         const type = menuItem.dataset.type;
         const lines = AppState.rawMarkdown.split(/\r?\n/);
 
@@ -1228,6 +1437,24 @@ function initAppListeners() {
           lastIndex--;
         }
 
+        // Find a <hr> divider in the last chunk to insert BEFORE it
+        let insertIndex = lastIndex + 1;
+        let hrIndex = -1;
+        for (let idx = lastIndex; idx >= AppState.yamlLinesCount; idx--) {
+          const line = lines[idx].trim();
+          if (line === '<hr>') {
+            hrIndex = idx;
+            break;
+          }
+          // Stop if we hit a heading or non-checkbox list item (other than empty lines/checkboxes)
+          if (line !== "" && !/^\s*-\s+(?:<<\[[ xX]\]>>|<\[[ xX]\]>|\[[ xX]\])\s+.*$/.test(lines[idx])) {
+            break;
+          }
+        }
+        if (hrIndex !== -1) {
+          insertIndex = hrIndex;
+        }
+
         let newLine = "- [ ] Don't ";
         if (type === 'persistent') {
           newLine = "- <[ ]> Don't ";
@@ -1235,7 +1462,7 @@ function initAppListeners() {
           newLine = "- <<[ ]>> Don't ";
         }
 
-        lines.splice(lastIndex + 1, 0, newLine);
+        lines.splice(insertIndex, 0, newLine);
         AppState.rawMarkdown = lines.join('\n');
 
         // Reload and re-render
@@ -1247,7 +1474,7 @@ function initAppListeners() {
 
         // Focus the new task text and place cursor at end
         setTimeout(() => {
-          const newEl = document.querySelector(`.task-text[data-line="${lastIndex + 1}"]`);
+          const newEl = document.querySelector(`.task-text[data-line="${insertIndex}"]`);
           if (newEl) {
             newEl.focus();
             const range = document.createRange();
@@ -1262,6 +1489,13 @@ function initAppListeners() {
         e.stopPropagation();
       }
     });
+
+    // 2.5 Focus event on text updates (push undo snapshot before editing starts)
+    interactiveView.addEventListener('focus', (e) => {
+      if (e.target.classList.contains('task-text') && e.target.hasAttribute('contenteditable')) {
+        pushUndoSnapshot();
+      }
+    }, true);
 
     // 3. Inline editable text updates on input (silent sync)
     interactiveView.addEventListener('input', (e) => {
@@ -1311,6 +1545,7 @@ function initAppListeners() {
       if (e.target.classList.contains('task-text') && e.target.hasAttribute('contenteditable')) {
         if (e.key === 'Enter') {
           e.preventDefault();
+          pushUndoSnapshot();
 
           const lineIndex = parseInt(e.target.dataset.line, 10);
           const lines = AppState.rawMarkdown.split(/\r?\n/);
@@ -1346,6 +1581,7 @@ function initAppListeners() {
           }, 50);
         } else if (e.key === 'Backspace' && e.target.textContent === '') {
           e.preventDefault();
+          pushUndoSnapshot();
 
           const lineIndex = parseInt(e.target.dataset.line, 10);
           const lines = AppState.rawMarkdown.split(/\r?\n/);
@@ -1474,6 +1710,29 @@ function boot() {
 
   // Run calendar day checks
   checkDayFlip();
+
+  // Run persistent cooldown resets on boot
+  checkPersistentCooldownResets();
+
+  // Request notifications permission on boot
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+  
+  // Initialize scheduled notifications
+  initCooldownNotifications();
+
+  // Set up 30-second cooldown checker and UI refresher
+  setInterval(() => {
+    checkPersistentCooldownResets();
+    
+    // Check if user is currently editing a task text
+    const activeEl = document.activeElement;
+    const isEditing = activeEl && activeEl.classList.contains('task-text') && activeEl.hasAttribute('contenteditable');
+    if (!isEditing) {
+      renderInteractiveView();
+    }
+  }, 30 * 1000);
 
   // Render views
   const editor = document.getElementById('markdown-editor');
