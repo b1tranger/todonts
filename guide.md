@@ -15,7 +15,7 @@ To-Don't lets you write your constraints using standard Markdown syntax inside t
 - **Behavior**: A simple one-time constraint task. When checked in the Interactive View, it strikes through. You can toggle this on and off freely.
 
 ### 2. Persistent Habits (`- <[ ]>`)
-- **Syntax**: `- <[ ]> Avoid checking social media before noon`
+- **Syntax**: `- <[ ]> Don't check social media before noon`
 - **Behavior**: An ongoing constraint. When checked, it strikes through and greys out, but stays active and interactive so you can uncheck it later if needed.
 
 ### 3. Daily Recurring Constraints (`- <<[ ]>>`)
@@ -44,10 +44,10 @@ To-Don't features a complete interactive checklist interface. While you can alwa
 
 ### 1. Adding Constraints
 Click the **`+ Add Task`** button at the bottom of the checklist. A dropdown selector will slide open below the button:
-- **Regular**: Adds a Standard Task (`- [ ]`).
-- **Persistent**: Adds a Persistent Habit (`- <[ ]>`).
-- **Daily**: Adds a Daily Constraint (`- <<[ ]>>`).
-Selecting any type automatically appends a new constraint item, focuses the cursor on the new item, and selects its default text so you can begin typing immediately.
+- **Regular**: Adds a Standard Task (`- [ ] Don't `).
+- **Persistent**: Adds a Persistent Habit (`- <[ ]> Don't `).
+- **Daily**: Adds a Daily Constraint (`- <<[ ]>> Don't `).
+Selecting any type automatically appends a new constraint line with a default `"Don't "` prefix, focusing your cursor right after the space. A grayed out placeholder suffix representing the type (`New Task`, `New Habit`, or `New Daily Constraint`) displays after `"Don't "`. This suffix is a visual guide and disappears immediately as you start typing.
 
 ### 2. Inline Text Editing
 You can click directly on any unchecked checklist label to edit its text.

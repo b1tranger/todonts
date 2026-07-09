@@ -1366,3 +1366,13 @@ body {
   from { transform: translateY(0); }
   to { transform: translateY(-8px); }
 }
+
+/* Grayed out placeholder after Don't */
+.task-text.show-placeholder::after {
+  content: " " attr(data-placeholder);
+  color: var(--text-muted);
+  font-style: italic;
+  font-weight: normal;
+  pointer-events: none;
+  margin-left: 0.25rem;
+}

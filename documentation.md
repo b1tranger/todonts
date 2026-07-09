@@ -41,7 +41,12 @@ The custom parser split-compiles the document body:
 
 ## 🕒 Version History
 
-### v1.3.0 (Current)
+### v1.3.1 (Current)
+- **Feature**: Auto-prepended `"Don't "` prefix on adding or inserting checklist items.
+- **Feature**: CSS-driven grayed out placeholder suffixes (`New Task`, `New Habit`, `New Daily Constraint`) which hide automatically upon typing.
+- **Enhancement**: Fixed light theme contrast using a slate backdrop (`#E2E8F0` / `#F1F5F9`) and pure white cards, resolving the "+ Add Task" button visibility issue.
+
+### v1.3.0
 - **Feature**: Full interactive task manager experience. Added an inline `+ Add Task` button with pop-up type selector (Standard, Persistent, or Daily).
 - **Feature**: Inline text editing (`contenteditable`) beside checkbox elements with real-time silent editor synchronization.
 - **Feature**: Keyboard navigation: **Enter** to insert a new task line of the same type below; **Backspace** on an empty task line to delete the current constraint.

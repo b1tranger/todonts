@@ -32,8 +32,8 @@ history:
 Keep these boundaries strong today. It is about restraint, not action. Let's make today count.
 ## The Daily To-Don'ts
 - <<[ ]>> Don't check emails before noon
-- <[ ]> Avoid mindless infinite scrolling
-- [ ] Uninstall time-wasting apps from phone
+- <[ ]> Don't mindlessly infinite scroll
+- [ ] Don't keep time-wasting apps on phone
 
 ## General Guidelines
 <<hr>>
@@ -393,6 +393,9 @@ function compileTextLines(linesObj, historyData) {
       const streak = historyItem ? historyItem.streak : 0;
       const streakHtml = streak > 0 ? `<span class="streak-display" title="${streak} day streak"><i class="fa-solid fa-fire"></i> ${streak}</span>` : '';
 
+      const isPlaceholder = (taskText.trim().toLowerCase() === "don't");
+      const placeholderClass = isPlaceholder ? 'show-placeholder' : '';
+
       if (isChecked) {
         html += `
           <div class="todont-item recurring-constraint checked read-only" data-line="${globalLineIndex}">
@@ -400,7 +403,7 @@ function compileTextLines(linesObj, historyData) {
               <input type="checkbox" checked disabled data-line="${globalLineIndex}" data-type="recurring">
               <span class="custom-checkbox recurring"></span>
             </label>
-            <span class="task-text">${parseInlineMarkdown(taskText)}${streakHtml}</span>
+            <span class="task-text ${placeholderClass}" data-placeholder="New Daily Constraint" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}${streakHtml}</span>
             <span class="success-badge">Avoided Today</span>
             <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
               <i class="fa-solid fa-xmark"></i>
@@ -414,7 +417,7 @@ function compileTextLines(linesObj, historyData) {
               <input type="checkbox" data-line="${globalLineIndex}" data-type="recurring">
               <span class="custom-checkbox recurring"></span>
             </label>
-            <span class="task-text" contenteditable="true" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>${streakHtml}
+            <span class="task-text ${placeholderClass}" contenteditable="true" data-placeholder="New Daily Constraint" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>${streakHtml}
             <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
               <i class="fa-solid fa-xmark"></i>
             </button>
@@ -428,13 +431,15 @@ function compileTextLines(linesObj, historyData) {
       html += closeActiveBlocks();
       const isChecked = persMatch[1].toLowerCase() === 'x';
       const taskText = persMatch[2];
+      const isPlaceholder = (taskText.trim().toLowerCase() === "don't");
+      const placeholderClass = isPlaceholder ? 'show-placeholder' : '';
       html += `
         <div class="todont-item persistent-habit ${isChecked ? 'checked' : ''}" data-line="${globalLineIndex}">
           <label class="checkbox-container">
             <input type="checkbox" ${isChecked ? 'checked' : ''} data-line="${globalLineIndex}" data-type="persistent">
             <span class="custom-checkbox persistent"></span>
           </label>
-          <span class="task-text" contenteditable="true" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
+          <span class="task-text ${placeholderClass}" contenteditable="true" data-placeholder="New Habit" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
           <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
             <i class="fa-solid fa-xmark"></i>
           </button>
@@ -447,13 +452,15 @@ function compileTextLines(linesObj, historyData) {
       html += closeActiveBlocks();
       const isChecked = stdMatch[1].toLowerCase() === 'x';
       const taskText = stdMatch[2];
+      const isPlaceholder = (taskText.trim().toLowerCase() === "don't");
+      const placeholderClass = isPlaceholder ? 'show-placeholder' : '';
       html += `
         <div class="todont-item standard-task ${isChecked ? 'checked' : ''}" data-line="${globalLineIndex}">
           <label class="checkbox-container">
             <input type="checkbox" ${isChecked ? 'checked' : ''} data-line="${globalLineIndex}" data-type="standard">
             <span class="custom-checkbox"></span>
           </label>
-          <span class="task-text" contenteditable="true" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
+          <span class="task-text ${placeholderClass}" contenteditable="true" data-placeholder="New Task" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
           <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
             <i class="fa-solid fa-xmark"></i>
           </button>
@@ -1076,11 +1083,11 @@ function initAppListeners() {
       if (deleteBtn) {
         const lineIndex = parseInt(deleteBtn.dataset.line, 10);
         const lines = AppState.rawMarkdown.split(/\r?\n/);
-        
+
         if (lines[lineIndex] !== undefined) {
           lines.splice(lineIndex, 1);
           AppState.rawMarkdown = lines.join('\n');
-          
+
           loadDataFromMarkdown(AppState.rawMarkdown);
           renderInteractiveView();
           updateHeaderStats();
@@ -1114,17 +1121,14 @@ function initAppListeners() {
           lastIndex--;
         }
 
-        let prefix = "- [ ] ";
-        let defaultText = "New Task";
+        let newLine = "- [ ] Don't ";
         if (type === 'persistent') {
-          prefix = "- <[ ]> ";
-          defaultText = "New Habit";
+          newLine = "- <[ ]> Don't ";
         } else if (type === 'recurring') {
-          prefix = "- <<[ ]>> ";
-          defaultText = "New Daily Constraint";
+          newLine = "- <<[ ]>> Don't ";
         }
 
-        lines.splice(lastIndex + 1, 0, prefix + defaultText);
+        lines.splice(lastIndex + 1, 0, newLine);
         AppState.rawMarkdown = lines.join('\n');
 
         // Reload and re-render
@@ -1134,13 +1138,14 @@ function initAppListeners() {
         syncSaveState();
         updateEditorTextarea();
 
-        // Focus the new task text
+        // Focus the new task text and place cursor at end
         setTimeout(() => {
           const newEl = document.querySelector(`.task-text[data-line="${lastIndex + 1}"]`);
           if (newEl) {
             newEl.focus();
             const range = document.createRange();
             range.selectNodeContents(newEl);
+            range.collapse(false); // collapse to end
             const sel = window.getSelection();
             sel.removeAllRanges();
             sel.addRange(range);
@@ -1156,6 +1161,14 @@ function initAppListeners() {
       if (e.target.classList.contains('task-text') && e.target.hasAttribute('contenteditable')) {
         const lineIndex = parseInt(e.target.dataset.line, 10);
         const newText = e.target.textContent;
+
+        // Dynamically toggle placeholder visibility
+        if (newText.trim().toLowerCase() === "don't") {
+          e.target.classList.add('show-placeholder');
+        } else {
+          e.target.classList.remove('show-placeholder');
+        }
+
         const lines = AppState.rawMarkdown.split(/\r?\n/);
 
         if (lines[lineIndex] !== undefined) {
@@ -1196,17 +1209,14 @@ function initAppListeners() {
           const lines = AppState.rawMarkdown.split(/\r?\n/);
           const currentLine = lines[lineIndex];
 
-          let prefix = "- [ ] ";
-          let defaultText = "New Task";
+          let newLine = "- [ ] Don't ";
           if (currentLine.includes("- <[")) {
-            prefix = "- <[ ]> ";
-            defaultText = "New Habit";
+            newLine = "- <[ ]> Don't ";
           } else if (currentLine.includes("- <<[")) {
-            prefix = "- <<[ ]>> ";
-            defaultText = "New Daily Constraint";
+            newLine = "- <<[ ]>> Don't ";
           }
 
-          lines.splice(lineIndex + 1, 0, prefix + defaultText);
+          lines.splice(lineIndex + 1, 0, newLine);
           AppState.rawMarkdown = lines.join('\n');
 
           loadDataFromMarkdown(AppState.rawMarkdown);
@@ -1221,6 +1231,7 @@ function initAppListeners() {
               nextEl.focus();
               const range = document.createRange();
               range.selectNodeContents(nextEl);
+              range.collapse(false); // collapse to end
               const sel = window.getSelection();
               sel.removeAllRanges();
               sel.addRange(range);
