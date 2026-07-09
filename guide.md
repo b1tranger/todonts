@@ -39,6 +39,35 @@ To-Don't lets you write your constraints using standard Markdown syntax inside t
 
 ---
 
+## 🖱️ Interactive Task Manager
+To-Don't features a complete interactive checklist interface. While you can always edit constraints in raw Markdown, you can manage your day-to-day checklist purely in the **Active View**:
+
+### 1. Adding Constraints
+Click the **`+ Add Task`** button at the bottom of the checklist. A dropdown selector will slide open below the button:
+- **Regular**: Adds a Standard Task (`- [ ]`).
+- **Persistent**: Adds a Persistent Habit (`- <[ ]>`).
+- **Daily**: Adds a Daily Constraint (`- <<[ ]>>`).
+Selecting any type automatically appends a new constraint item, focuses the cursor on the new item, and selects its default text so you can begin typing immediately.
+
+### 2. Inline Text Editing
+You can click directly on any unchecked checklist label to edit its text.
+- As you type, the change is synchronized silently with the Markdown Editor pane and `localStorage`.
+- Click away (blur focus) to render any inline Markdown formatting tags (like `*italics*` or `**bold**`).
+
+### 3. Keyboard Shortcuts
+While typing inside a checklist label:
+- **`Enter`**: Instantly creates a new blank task of the same type directly below the current line and focuses the new input.
+- **`Backspace`**: If a label is completely empty, pressing Backspace will delete that checklist line and move your cursor focus to the end of the preceding task.
+
+### 4. Deleting Constraints
+- Hovering your cursor over a checklist item reveals a small **`x`** button on the right margin.
+- Clicking the `x` button instantly removes the checklist item.
+
+### 5. Clear All
+Click the **`Clear All`** button in the header toolbar of the Interactive Tasks pane to wipe out all constraints and start fresh. Your profile username, successes count, and streak history remain safe in your YAML configuration headers.
+
+---
+
 ## 💾 Backup & Restore
 Since To-Don't is local-first, it does not require a login or any server backends. Your data is stored strictly in your browser's local storage.
 
