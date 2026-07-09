@@ -13,10 +13,10 @@
   --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
 
   /* Theme Tokens - Light Mode Default */
-  --bg-app: #F9F9FB;
-  --bg-pane: #FFFFFF;
-  --bg-header: #FFFFFF;
-  --bg-status: #F1F5F9;
+  --bg-app: #E2E8F0;               /* slate-200, darker gray backdrop */
+  --bg-pane: #F1F5F9;              /* slate-100, soft off-white pane */
+  --bg-header: #F1F5F9;            /* slate-100, matching header pane */
+  --bg-status: #E2E8F0;            /* slate-200, matching footer status */
   
   --text-primary: #0F172A;
   --text-secondary: #475569;
@@ -26,7 +26,10 @@
   --accent-secondary: #2563EB;     /* Royal Blue */
   --accent-success: #059669;       /* Emerald Green */
   
-  --card-bg: #F0F4F8;              /* Soft Light Blue/Gray tint */
+  --accent: var(--accent-secondary);
+  --accent-hover: #1d4ed8;         /* blue-700 */
+  
+  --card-bg: #FFFFFF;              /* Pure white cards pop off slate-100 pane background */
   --card-border: 1px solid #E2E8F0;
   --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
@@ -62,6 +65,9 @@
   --accent-primary: #E2E8F0;       /* Off-white */
   --accent-secondary: #38BDF8;     /* Light Blue */
   --accent-success: #10B981;       /* Vibrant Success Green */
+  
+  --accent: var(--accent-secondary);
+  --accent-hover: #0ea5e9;         /* sky-500 */
   
   --card-bg: #2A2A35;              /* Muted Dark Gray */
   --card-border: 1px solid rgba(167, 243, 208, 0.15); /* soft green border glow */
