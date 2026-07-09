@@ -710,7 +710,7 @@ function initCooldownNotifications() {
     if (persMatch) {
       const isChecked = persMatch[1].toLowerCase() === 'x';
       const taskText = persMatch[2];
-      
+
       if (!isChecked) {
         const taskId = slugify(taskText);
         const historyItem = AppState.history.find(item => item.id === taskId);
@@ -1003,7 +1003,7 @@ function handleCheckboxChange(e) {
           historyItem.last_checked = now.toISOString();
         }
       }
-      showToast("🎉 Awesome! Daily constraint avoided successfully.", "success");
+      showToast("Awesome! Daily constraint avoided successfully.", "success");
     }
   }
 
@@ -1090,7 +1090,7 @@ function checkDayFlip() {
 
     // Save state
     syncSaveState();
-    showToast("📅 New calendar day detected. Daily constraints reset!", "info");
+    showToast("New calendar day detected. Daily constraints reset!", "info");
   }
 }
 
@@ -1214,10 +1214,10 @@ function handleImportFile(e) {
       updateHeaderStats();
       initCooldownNotifications();
 
-      showToast("🔄 Data imported successfully!", "success");
+      showToast("Data imported successfully!", "success");
     } catch (err) {
       console.error(err);
-      showToast("❌ Invalid backup file format.", "error");
+      showToast("Invalid backup file format.", "error");
     }
   };
   reader.readAsText(file);
@@ -1340,7 +1340,7 @@ function initAppListeners() {
     closePointsModalBtn.addEventListener('click', () => {
       pointsModal.classList.add('closed');
     });
-    
+
     pointsModal.addEventListener('click', (e) => {
       if (e.target === pointsModal) {
         pointsModal.classList.add('closed');
@@ -1718,14 +1718,14 @@ function boot() {
   if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission();
   }
-  
+
   // Initialize scheduled notifications
   initCooldownNotifications();
 
   // Set up 30-second cooldown checker and UI refresher
   setInterval(() => {
     checkPersistentCooldownResets();
-    
+
     // Check if user is currently editing a task text
     const activeEl = document.activeElement;
     const isEditing = activeEl && activeEl.classList.contains('task-text') && activeEl.hasAttribute('contenteditable');
