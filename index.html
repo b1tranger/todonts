@@ -82,11 +82,12 @@
           <p>No tasks rendered. Type something in the Custom Tasks editor or import a backup file to get started.</p>
         </div>
       </div>
-      <!-- Toggle button positioned on the right border -->
-      <button id="toggle-editor-btn" class="toggle-editor-btn" title="Toggle Markdown Editor" aria-label="Toggle Markdown Editor">
-        <span id="toggle-editor-icon"><i class="fa-solid fa-arrow-right"></i></span>
-      </button>
     </section>
+
+    <!-- Toggle button positioned on the right border, outside both panes -->
+    <button id="toggle-editor-btn" class="toggle-editor-btn" title="Toggle Markdown Editor" aria-label="Toggle Markdown Editor">
+      <span id="toggle-editor-icon"><i class="fa-solid fa-arrow-right"></i></span>
+    </button>
 
     <!-- Right Pane: Custom Tasks Markdown Canvas -->
     <section class="pane pane-right hidden" id="editor-pane" aria-label="Custom Tasks Markdown Editor">
@@ -105,6 +106,11 @@
     <div class="status-left">
       <span class="status-dot green" id="sw-status-dot"></span>
       <span id="sw-status-text">Checking Service Worker...</span>
+    </div>
+    <div class="status-middle">
+      <a href="render.html?file=guide.md" class="footer-link" title="Open User Guide"><i class="fa-solid fa-book"></i> User Guide</a>
+      <span class="footer-separator">|</span>
+      <a href="render.html?file=documentation.md" class="footer-link" title="Open Technical Documentation"><i class="fa-solid fa-circle-info"></i> Documentation</a>
     </div>
     <div class="status-right">
       <span id="sync-status-text">Last synched: Never</span>

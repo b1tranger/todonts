@@ -270,14 +270,81 @@ function renderTable(rows) {
 // Main Custom Markdown to HTML Compiler
 function parseMarkdownToHTML(bodyText, historyData, globalLineIndexOffset) {
   const lines = bodyText.split(/\r?\n/);
+  
+  // 1. Group lines into segments (headings, separators, or general text)
+  const segments = [];
+  let currentTextSegment = null;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    const globalLineIndex = i + globalLineIndexOffset;
+    
+    if (trimmed === "<<hr>>") {
+      if (currentTextSegment) {
+        segments.push(currentTextSegment);
+        currentTextSegment = null;
+      }
+      segments.push({ type: 'separator', lineIndex: globalLineIndex });
+    } else if (line.match(/^(#{1,6})\s+(.*)$/)) {
+      if (currentTextSegment) {
+        segments.push(currentTextSegment);
+        currentTextSegment = null;
+      }
+      segments.push({ type: 'heading', text: line, lineIndex: globalLineIndex });
+    } else {
+      if (!currentTextSegment) {
+        currentTextSegment = { type: 'text', lines: [] };
+      }
+      currentTextSegment.lines.push({ text: line, lineIndex: globalLineIndex });
+    }
+  }
+  
+  if (currentTextSegment) {
+    segments.push(currentTextSegment);
+  }
+  
+  // 2. Compile segments to HTML
   let html = "";
   
+  for (let j = 0; j < segments.length; j++) {
+    const seg = segments[j];
+    
+    if (seg.type === 'heading') {
+      const headingMatch = seg.text.match(/^(#{1,6})\s+(.*)$/);
+      const level = headingMatch[1].length;
+      const headingText = parseInlineMarkdown(headingMatch[2]);
+      html += `<h${level}>${headingText}</h${level}>`;
+    } else if (seg.type === 'separator') {
+      // Separator itself doesn't render any visible rule
+      continue;
+    } else if (seg.type === 'text') {
+      // The text segment is wrapped in a card if preceded or followed by <<hr>>
+      const prevSeg = segments[j - 1];
+      const nextSeg = segments[j + 1];
+      const isCard = (prevSeg && prevSeg.type === 'separator') || (nextSeg && nextSeg.type === 'separator');
+      
+      const segmentHtml = compileTextLines(seg.lines, historyData);
+      
+      if (isCard) {
+        html += `<div class="todont-card">${segmentHtml}</div>`;
+      } else {
+        html += segmentHtml;
+      }
+    }
+  }
+  
+  return html;
+}
+
+// Compile individual lines of a text segment into HTML elements
+function compileTextLines(linesObj, historyData) {
+  let html = "";
   let inList = false;
   let inTable = false;
   let tableRows = [];
   let inParagraph = false;
   let paragraphLines = [];
-  let inCard = false;
   
   function closeActiveBlocks() {
     let blockHtml = "";
@@ -298,47 +365,20 @@ function parseMarkdownToHTML(bodyText, historyData, globalLineIndexOffset) {
     return blockHtml;
   }
   
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  for (let i = 0; i < linesObj.length; i++) {
+    const lineObj = linesObj[i];
+    const line = lineObj.text;
     const trimmed = line.trim();
+    const globalLineIndex = lineObj.lineIndex;
     
-    // 1. Visual Card block divider <<hr>>
-    if (trimmed === "<<hr>>") {
-      html += closeActiveBlocks();
-      if (inCard) {
-        html += "</div>";
-        inCard = false;
-      }
-      html += '<div class="todont-card">';
-      inCard = true;
-      continue;
-    }
-    
-    // 2. Headings
-    const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
-    if (headingMatch) {
-      html += closeActiveBlocks();
-      if (inCard) {
-        html += "</div>"; // Heading closes the card container
-        inCard = false;
-      }
-      const level = headingMatch[1].length;
-      const headingText = parseInlineMarkdown(headingMatch[2]);
-      html += `<h${level}>${headingText}</h${level}>`;
-      continue;
-    }
-    
-    // 3. Horizontal Rules
+    // Horizontal Rule
     if (trimmed.match(/^(?:-{3,}|\*{3,}|_{3,})$/) || trimmed === "<hr>") {
       html += closeActiveBlocks();
       html += "<hr>";
       continue;
     }
     
-    // Global line offset index calculation
-    const globalLineIndex = i + globalLineIndexOffset;
-    
-    // 4. Custom Task Checkboxes
+    // Custom Task Checkboxes
     const recMatch = line.match(/^\s*-\s+<<\[([ xX])\]>>\s+(.*)$/);
     const persMatch = line.match(/^\s*-\s+<\[([ xX])\]>\s+(.*)$/);
     const stdMatch = line.match(/^\s*-\s+\[([ xX])\]\s+(.*)$/);
@@ -410,7 +450,7 @@ function parseMarkdownToHTML(bodyText, historyData, globalLineIndexOffset) {
       continue;
     }
     
-    // 5. Unordered List Items
+    // Unordered List Items
     const ulMatch = line.match(/^(\s*)[-*+]\s+(.*)$/);
     if (ulMatch) {
       html += closeActiveBlocks();
@@ -423,7 +463,7 @@ function parseMarkdownToHTML(bodyText, historyData, globalLineIndexOffset) {
       continue;
     }
     
-    // 6. Ordered List Items
+    // Ordered List Items
     const olMatch = line.match(/^(\s*)\d+\.\s+(.*)$/);
     if (olMatch) {
       html += closeActiveBlocks();
@@ -436,7 +476,7 @@ function parseMarkdownToHTML(bodyText, historyData, globalLineIndexOffset) {
       continue;
     }
     
-    // 7. Table Rows Accumulation
+    // Table Rows
     const tableMatch = line.match(/^\s*\|(.*)\|\s*$/);
     if (tableMatch) {
       html += closeActiveBlocks();
@@ -448,7 +488,7 @@ function parseMarkdownToHTML(bodyText, historyData, globalLineIndexOffset) {
       continue;
     }
     
-    // 8. Blockquotes
+    // Blockquotes
     const quoteMatch = line.match(/^\s*>\s*(.*)$/);
     if (quoteMatch) {
       html += closeActiveBlocks();
@@ -456,14 +496,16 @@ function parseMarkdownToHTML(bodyText, historyData, globalLineIndexOffset) {
       continue;
     }
     
-    // 9. Blank Lines
+    // Blank lines
     if (trimmed === "") {
       html += closeActiveBlocks();
       continue;
     }
     
-    // 10. Default paragraph line accumulation
-    html += closeActiveBlocks();
+    // Paragraph content accumulation
+    if (inList || inTable) {
+      html += closeActiveBlocks();
+    }
     if (!inParagraph) {
       inParagraph = true;
       paragraphLines = [];
@@ -472,10 +514,6 @@ function parseMarkdownToHTML(bodyText, historyData, globalLineIndexOffset) {
   }
   
   html += closeActiveBlocks();
-  if (inCard) {
-    html += "</div>";
-  }
-  
   return html;
 }
 

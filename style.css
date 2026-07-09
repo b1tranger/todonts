@@ -261,6 +261,7 @@ body {
   height: calc(100vh - var(--header-height) - var(--status-height));
   background-color: var(--bg-app);
   transition: grid-template-columns var(--transition-speed) var(--transition-curve);
+  position: relative; /* Establish absolute boundaries for children like the toggle button */
 }
 
 /* Layout centering when editor is hidden */
@@ -290,15 +291,14 @@ body {
 
 .pane-left {
   border-right: 1px solid var(--border-color);
-  position: relative; /* Context for absolute editor toggle positioning */
-  z-index: 10; /* Stack above pane-right so the overflow toggle button sits on top */
+  z-index: 10;
 }
 
-/* Editor Toggle Button */
+/* Editor Toggle Button (placed outside panes as a direct child of app-layout) */
 .toggle-editor-btn {
   position: absolute;
   top: 50%;
-  right: -16px;
+  left: calc(50% - 16px);
   transform: translateY(-50%);
   width: 32px;
   height: 32px;
@@ -319,6 +319,19 @@ body {
 .toggle-editor-btn:hover {
   background-color: var(--border-color);
   transform: translateY(-50%) scale(1.1);
+}
+
+/* Position toggle button on the right edge of centered pane-left when editor is hidden */
+.app-layout.editor-hidden .toggle-editor-btn {
+  left: calc(50% + 400px - 16px);
+}
+
+/* Fallback for when viewport width is smaller than centered pane width (800px) */
+@media (max-width: 800px) {
+  .app-layout.editor-hidden .toggle-editor-btn {
+    left: auto;
+    right: 16px;
+  }
 }
 
 .toggle-editor-btn span {
@@ -728,6 +741,32 @@ body {
   font-size: 0.75rem;
   color: var(--text-secondary);
   z-index: 100;
+}
+
+.status-middle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.footer-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color var(--transition-speed) var(--transition-curve);
+}
+
+.footer-link:hover {
+  color: var(--border-focus);
+  text-decoration: underline;
+}
+
+.footer-separator {
+  color: var(--border-color);
+  font-size: 0.8rem;
 }
 
 .status-left, .status-right {
