@@ -43,11 +43,11 @@
     <!-- Stats & Controls -->
     <div class="header-controls">
       <div class="stats-panel">
-        <div class="stat-badge" title="Total successfully avoided tasks">
+        <button class="stat-badge" id="points-info-badge" title="Click to view points distribution">
           <span class="stat-icon"><i class="fa-solid fa-trophy"></i></span>
           <span class="stat-label">Successes:</span>
           <span id="total-successes-count" class="stat-value">0</span>
-        </div>
+        </button>
         <div class="profile-badge">
           <span class="profile-icon"><i class="fa-solid fa-user"></i></span>
           <input type="text" id="username-input" class="username-inline-edit" value="Anonymous" title="Click to edit username">
@@ -145,6 +145,34 @@
 
   <!-- Toast Reminders Container -->
   <div id="toast-container" class="toast-container"></div>
+
+  <!-- Points Distribution Modal -->
+  <div id="points-modal" class="points-modal-overlay closed">
+    <div class="points-modal-content">
+      <div class="points-modal-header">
+        <h3 class="points-modal-title"><i class="fa-solid fa-trophy"></i> Points Distribution</h3>
+        <button class="points-modal-close" id="close-points-modal" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="points-modal-body">
+        <p class="points-modal-desc">Earn points by successfully avoiding constraints and maintaining your To-Don'ts:</p>
+        <ul class="points-list">
+          <li class="points-list-item">
+            <span class="points-type"><span class="custom-checkbox-preview standard inline-preview"></span> Regular Task <code>- [ ]</code></span>
+            <span class="points-value">+1 to +2 Points (Random)</span>
+          </li>
+          <li class="points-list-item">
+            <span class="points-type"><span class="custom-checkbox-preview persistent inline-preview"></span> Persistent Habit <code>- &lt;[ ]&gt;</code></span>
+            <span class="points-value">+1 to +5 Points (Random)</span>
+          </li>
+          <li class="points-list-item">
+            <span class="points-type"><span class="custom-checkbox-preview recurring inline-preview"></span> Daily Constraint <code>- &lt;&lt;[ ]&gt;&gt;</code></span>
+            <span class="points-value">+1 to +9 Points (Random)</span>
+          </li>
+        </ul>
+        <p class="points-modal-footer-note"><i class="fa-solid fa-circle-info"></i> Points are lifetime success milestones and are not deducted when unchecking a task.</p>
+      </div>
+    </div>
+  </div>
 
   <!-- Main Logic -->
   <script src="./app.js"></script>

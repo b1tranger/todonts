@@ -400,10 +400,10 @@ function compileTextLines(linesObj, historyData) {
         html += `
           <div class="todont-item recurring-constraint checked read-only" data-line="${globalLineIndex}">
             <label class="checkbox-container">
-              <input type="checkbox" checked disabled data-line="${globalLineIndex}" data-type="recurring">
+              <input type="checkbox" checked disabsled data-line="${globalLineIndex}" data-type="recurring">
               <span class="custom-checkbox recurring"></span>
             </label>
-            <span class="task-text ${placeholderClass}" data-placeholder="New Daily Constraint" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}${streakHtml}</span>
+            <span class="task-text ${placeholderClass}" data-placeholder="forgo New Daily Constraint" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}${streakHtml}</span>
             <span class="success-badge">Avoided Today</span>
             <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
               <i class="fa-solid fa-xmark"></i>
@@ -439,7 +439,7 @@ function compileTextLines(linesObj, historyData) {
             <input type="checkbox" ${isChecked ? 'checked' : ''} data-line="${globalLineIndex}" data-type="persistent">
             <span class="custom-checkbox persistent"></span>
           </label>
-          <span class="task-text ${placeholderClass}" contenteditable="true" data-placeholder="New Habit" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
+          <span class="task-text ${placeholderClass}" contenteditable="true" data-placeholder="continue this New Habit" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
           <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
             <i class="fa-solid fa-xmark"></i>
           </button>
@@ -460,7 +460,7 @@ function compileTextLines(linesObj, historyData) {
             <input type="checkbox" ${isChecked ? 'checked' : ''} data-line="${globalLineIndex}" data-type="standard">
             <span class="custom-checkbox"></span>
           </label>
-          <span class="task-text ${placeholderClass}" contenteditable="true" data-placeholder="New Task" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
+          <span class="task-text ${placeholderClass}" contenteditable="true" data-placeholder="do this New Task" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
           <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
             <i class="fa-solid fa-xmark"></i>
           </button>
@@ -616,6 +616,20 @@ function updateMarkdownLineText(lineText, newText) {
   return lineText;
 }
 
+// Helper: Show floating point success indicator
+function showFloatingPoints(points, x, y) {
+  const element = document.createElement('div');
+  element.className = 'floating-points';
+  element.textContent = `+${points} Points!`;
+  element.style.left = `${x}px`;
+  element.style.top = `${y}px`;
+  document.body.appendChild(element);
+
+  element.addEventListener('animationend', () => {
+    element.remove();
+  });
+}
+
 // Render the Interactive UI view
 function renderInteractiveView() {
   const container = document.getElementById('interactive-view');
@@ -689,24 +703,79 @@ function handleCheckboxChange(e) {
   const lines = AppState.rawMarkdown.split(/\r?\n/);
   const lineText = lines[lineIndex];
 
+  let pointsAwarded = 0;
+
   if (type === 'standard') {
     if (checked) {
       lines[lineIndex] = lineText.replace(/^(\s*-\s+\[)[ xX](\]\s+.*)$/, '$1x$2');
+      pointsAwarded = Math.floor(Math.random() * 2) + 1; // 1-2 points
     } else {
       lines[lineIndex] = lineText.replace(/^(\s*-\s+\[)[ xX](\]\s+.*)$/, '$1 $2');
     }
+
+    // Find the boundary of the checkbox chunk containing lineIndex
+    const isCheckboxLine = (line) => /^\s*-\s+(?:<<\[[ xX]\]>>|<\[[ xX]\]>|\[[ xX]\])\s+.*$/.test(line);
+
+    let start = lineIndex;
+    while (start > 0) {
+      const prevLine = lines[start - 1];
+      if (isCheckboxLine(prevLine) || prevLine.trim() === '<hr>') {
+        start--;
+      } else {
+        break;
+      }
+    }
+
+    let end = lineIndex;
+    while (end < lines.length - 1) {
+      const nextLine = lines[end + 1];
+      if (isCheckboxLine(nextLine) || nextLine.trim() === '<hr>') {
+        end++;
+      } else {
+        break;
+      }
+    }
+
+    // Extract chunk lines
+    const chunkLines = lines.slice(start, end + 1);
+
+    // Filter out <hr> from chunkLines, since we will rebuild the <hr> structure
+    const filteredChunk = chunkLines.filter(line => line.trim() !== '<hr>');
+
+    // Separate into active and checked standard lines
+    const activeLines = [];
+    const checkedStandardLines = [];
+
+    for (const line of filteredChunk) {
+      if (/^\s*-\s+\[[xX]\]\s+.*$/.test(line)) {
+        checkedStandardLines.push(line);
+      } else {
+        activeLines.push(line);
+      }
+    }
+
+    // Reassemble chunk
+    let newChunkLines = [];
+    if (checkedStandardLines.length > 0) {
+      newChunkLines = [...activeLines, '<hr>', ...checkedStandardLines];
+    } else {
+      newChunkLines = [...activeLines];
+    }
+
+    // Replace chunk in lines
+    lines.splice(start, chunkLines.length, ...newChunkLines);
+
   } else if (type === 'persistent') {
     if (checked) {
       lines[lineIndex] = lineText.replace(/^(\s*-\s+<\[)[ xX](\]>\s+.*)$/, '$1x$2');
+      pointsAwarded = Math.floor(Math.random() * 5) + 1; // 1-5 points
     } else {
       lines[lineIndex] = lineText.replace(/^(\s*-\s+<\[)[ xX](\]>\s+.*)$/, '$1 $2');
     }
   } else if (type === 'recurring') {
     if (checked) {
       lines[lineIndex] = lineText.replace(/^(\s*-\s+<<\[)[ xX](\]>>\s+.*)$/, '$1x$2');
-
-      // Increment successes
-      AppState.profile.total_successes += 1;
+      pointsAwarded = Math.floor(Math.random() * 9) + 1; // 1-9 points
 
       // Extract task name to resolve history streak
       const taskTextMatch = lineText.match(/^\s*-\s+<<\[[ xX]\]>>\s+(.*)$/);
@@ -728,7 +797,6 @@ function handleCheckboxChange(e) {
           if (isYesterday(lastCheckedDate, now)) {
             historyItem.streak += 1;
           } else {
-            // If checked today, do nothing. If older, reset streak.
             if (getLocalDateString(lastCheckedDate) !== getLocalDateString(now)) {
               historyItem.streak = 1;
             }
@@ -740,11 +808,27 @@ function handleCheckboxChange(e) {
     }
   }
 
+  // Update successes and show floating points if points were awarded
+  if (pointsAwarded > 0) {
+    AppState.profile.total_successes += pointsAwarded;
+
+    let clickX, clickY;
+    if (e.clientX && e.clientY) {
+      clickX = e.clientX + window.scrollX;
+      clickY = e.clientY + window.scrollY;
+    } else {
+      const rect = checkbox.getBoundingClientRect();
+      clickX = rect.left + window.scrollX + rect.width / 2;
+      clickY = rect.top + window.scrollY - 10;
+    }
+    showFloatingPoints(pointsAwarded, clickX, clickY);
+  }
+
   // Recompile whole raw Markdown
   AppState.rawMarkdown = lines.join('\n');
 
-  // If recurring task was updated, serialize the altered stats back into the YAML front matter
-  if (type === 'recurring' && checked) {
+  // If points were awarded or recurring task was updated, serialize the stats back into the YAML front matter
+  if (pointsAwarded > 0 || (type === 'recurring' && checked)) {
     const yamlRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
     const match = AppState.rawMarkdown.match(yamlRegex);
     let bodyText = AppState.rawMarkdown;
@@ -907,7 +991,7 @@ function exportBackup() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
-  showToast("💾 Backup downloaded successfully!", "success");
+  showToast("Backup downloaded successfully!", "success");
 }
 
 // Import backup parser
@@ -1038,6 +1122,29 @@ function initAppListeners() {
 
       syncSaveState();
       updateEditorTextarea();
+    });
+  }
+
+  // Points Info Modal Toggle
+  const pointsModal = document.getElementById('points-modal');
+  const pointsBadge = document.getElementById('points-info-badge');
+  const closePointsModalBtn = document.getElementById('close-points-modal');
+
+  if (pointsModal && pointsBadge) {
+    pointsBadge.addEventListener('click', () => {
+      pointsModal.classList.remove('closed');
+    });
+  }
+
+  if (pointsModal && closePointsModalBtn) {
+    closePointsModalBtn.addEventListener('click', () => {
+      pointsModal.classList.add('closed');
+    });
+    
+    pointsModal.addEventListener('click', (e) => {
+      if (e.target === pointsModal) {
+        pointsModal.classList.add('closed');
+      }
     });
   }
 

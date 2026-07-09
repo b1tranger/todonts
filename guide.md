@@ -12,18 +12,18 @@ To-Don't lets you write your constraints using standard Markdown syntax inside t
 
 ### 1. Standard Tasks (`- [ ]`)
 - **Syntax**: `- [ ] Don't eat fast food`
-- **Behavior**: A simple one-time constraint task. When checked in the Interactive View, it strikes through. You can toggle this on and off freely.
+- **Behavior**: A simple one-time constraint task. When checked, it awards a random amount of success points (+1 to +2 points), strikes through, and moves dynamically to the bottom of its checkbox chunk under a `<hr>` divider. Unchecking it moves it back to the active section above the divider.
 
 ### 2. Persistent Habits (`- <[ ]>`)
 - **Syntax**: `- <[ ]> Don't check social media before noon`
-- **Behavior**: An ongoing constraint. When checked, it strikes through and greys out, but stays active and interactive so you can uncheck it later if needed.
+- **Behavior**: An ongoing constraint. When checked, it awards +1 to +5 success points, strikes through, and greys out, but stays active and interactive so you can uncheck it later if needed.
 
 ### 3. Daily Recurring Constraints (`- <<[ ]>>`)
 - **Syntax**: `- <<[ ]>> Don't drink soda today`
 - **Behavior**: A daily commitment. Once checked:
   - It strikes through and turns grey.
   - It becomes **read-only** (disabled) for the rest of the day.
-  - It increments your total successes.
+  - It awards a random amount of +1 to +9 success points.
   - It starts or increments a daily streak! (e.g. `🔥 5`).
   - It automatically resets to unchecked when the next calendar day begins.
 
@@ -36,6 +36,16 @@ To-Don't lets you write your constraints using standard Markdown syntax inside t
   - <<[ ]>> Don't open phone in bed
   ```
 - **Behavior**: Any text content block immediately preceding or following a `<<hr>>` tag (bounded by headings or document edges) is automatically wrapped in a card layout with rounded corners (`border-radius: 12px`).
+
+---
+
+## 🏆 Success Point System
+To-Don't features a gamified point system to reward restraint. Clicking on the **Successes** badge in the header displays a pop-up sheet detailing the point rules:
+- **Regular Task (`- [ ]`)**: Awards a random integer between +1 and +2 points on check.
+- **Persistent Habit (`- <[ ]>`)**: Awards a random integer between +1 and +5 points on check.
+- **Daily Constraint (`- <<[ ]>>`)**: Awards a random integer between +1 and +9 points on check.
+
+When checking a task, a clean floating point indicator animates near your cursor or checkbox showing the point gain. Points represent lifetime success milestones and are never deducted when unchecking a task.
 
 ---
 

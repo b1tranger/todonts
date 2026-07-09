@@ -2,6 +2,8 @@
 
 This document outlines the technical architecture, file structure, custom markdown parser specification, and version history of the local-first "To-Don't" Habit Reform Progressive Web App.
 
+Repository: https://github.com/b1tranger/todonts
+
 ---
 
 ## 🛠️ Architecture Overview
@@ -33,15 +35,21 @@ The custom parser split-compiles the document body:
 - **Heading block boundaries**: Heading tokens (`#` to `######`) close wrapping layouts.
 - **Card Separators (`<<hr>>`)**: Segment-based groupings wrap adjacent text nodes in a `.todont-card` container class.
 - **Checkbox Tokenizer**:
-  - `- [ ]` $\rightarrow$ Standard task (checked: `- [x]`).
-  - `- <[ ]>` $\rightarrow$ Persistent habit (checked: `- <[x]>`).
-  - `- <<[ ]>>` $\rightarrow$ Recurring daily constraint (checked: `- <<[x]>>`).
+  - `- [ ]` $\rightarrow$ Standard task (checked: `- [x]`). When checked, it moves to the bottom of its contiguous checkbox chunk under a `<hr>` divider, and awards +1 to +2 success points.
+  - `- <[ ]>` $\rightarrow$ Persistent habit (checked: `- <[x]>`). Stays active across days and awards +1 to +5 success points on check.
+  - `- <<[ ]>>` $\rightarrow$ Recurring daily constraint (checked: `- <<[x]>>`). Increments streak, awards +1 to +9 success points, and locks to read-only.
 
 ---
 
 ## 🕒 Version History
 
-### v1.3.1 (Current)
+### v1.4.0 (Current)
+- **Feature**: Success point system. Award random points on check (Standard: 1–2, Persistent: 1–5, Daily Recurring: 1–9) with a floating "+X Points!" text animation.
+- **Feature**: Clickable Successes badge in the header that slides up a points distribution explanation bottom sheet modal.
+- **Feature**: Checkbox chunk reordering engine. Checking a standard task (`- [ ]`) moves it to the bottom of its contiguous chunk under a `<hr>` divider. Unchecking it moves it back up.
+- **Enhancement**: Fixed auto-rotation on mobile devices by locking PWA launch configuration to portrait mode inside `manifest.json`.
+
+### v1.3.1
 - **Feature**: Auto-prepended `"Don't "` prefix on adding or inserting checklist items.
 - **Feature**: CSS-driven grayed out placeholder suffixes (`New Task`, `New Habit`, `New Daily Constraint`) which hide automatically upon typing.
 - **Enhancement**: Fixed light theme contrast using a slate backdrop (`#E2E8F0` / `#F1F5F9`) and pure white cards, resolving the "+ Add Task" button visibility issue.

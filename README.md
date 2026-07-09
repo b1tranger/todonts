@@ -17,17 +17,22 @@ The core philosophy of the "To-Don't" project centers on the deliberate subtract
    - Updates the markdown editor in real time when you edit or check items in the interactive view.
    - Synchronizes raw markdown changes instantly back to the active list view without losing input focus.
 2. **Three-Tier Task Logic**:
-   - **Standard Task (`- [ ] Don't`)**: A simple one-time constraint that strikes through when checked.
-   - **Persistent Habit (`- <[ ]> Don't`)**: Ongoing boundaries that stay active across days so you can check and uncheck them.
-   - **Daily Recurring Constraint (`- <<[ ]>> Don't`)**: A commitment that locks to read-only when checked today, increments your total successes and fire streak (`🔥`), and automatically resets tomorrow.
-3. **Automatic "Don't" Suffix Placeholders**:
+   - **Standard Task (`- [ ] Don't`)**: A simple one-time constraint that strikes through, awards +1 to +2 points, and moves to the bottom of its checkbox chunk under a `<hr>` divider when checked.
+   - **Persistent Habit (`- <[ ]> Don't`)**: Ongoing boundaries that stay active across days so you can check and uncheck them. Awards +1 to +5 points on check.
+   - **Daily Recurring Constraint (`- <<[ ]>> Don't`)**: A commitment that locks to read-only when checked today, awards +1 to +9 points, increments your successes/fire streak (`🔥`), and automatically resets tomorrow.
+3. **Gamified Success Points System**:
+   - Earn random points based on the constraint bracket checked (+1 to +2 for standard, +1 to +5 for persistent, +1 to +9 for recurring).
+   - Points are added to the user's total successes and saved. They are lifetime success milestones and are never deducted when unchecking a task.
+   - Triggers a floating text animation (`+X Points!`) near the cursor/checkbox when unchecked tasks are avoided/checked.
+   - Clicking the successes trophy badge in the header displays a pop-up modal drawer detailing the point rules.
+4. **Automatic "Don't" Suffix Placeholders**:
    - Adding or inserting new checklist lines automatically formats them with a default `"Don't "` prefix.
    - A grayed-out placeholder suffix (`New Task`, `New Habit`, or `New Daily Constraint`) is rendered via CSS if the text consists only of the `"Don't "` prefix, disappearing immediately as you type.
-4. **Rounded Card Layouts (`<<hr>>`)**:
+5. **Rounded Card Layouts (`<<hr>>`)**:
    - Group text nodes and constraints inside rounded card layouts block-by-block using the `<<hr>>` tag.
-5. **Offline & Installation Ready**:
+6. **Offline & Installation Ready**:
    - Service worker caches all static assets for offline usage.
-   - App Install prompt banner is integrated into the drawer drawer menu on mobile viewports.
+   - App Install prompt banner is integrated into the header controls/hamburger drawer menu on mobile viewports.
 
 ---
 
