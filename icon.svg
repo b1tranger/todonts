@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E1E24" />
+      <stop offset="100%" stop-color="#0D1B2A" />
+    </linearGradient>
+    
+    <!-- Accent Glow Gradient -->
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#1A365D" />
+    </linearGradient>
+
+    <!-- Drop Shadow Filter -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+
+  <!-- Outer Border Ring (Soft Glow) -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="none" stroke="url(#glowGrad)" stroke-width="8" opacity="0.8" />
+
+  <!-- Center Icon Graphic -->
+  <g filter="url(#shadow)">
+    <!-- Outer prohibition circle -->
+    <circle cx="256" cy="256" r="110" fill="none" stroke="#EF4444" stroke-width="20" stroke-linecap="round" opacity="0.4" />
+    <line x1="178" y1="178" x2="334" y2="334" stroke="#EF4444" stroke-width="20" stroke-linecap="round" opacity="0.4" />
+    
+    <!-- Elegant, sharp green Checkmark for successfully avoiding -->
+    <path d="M180 260 L235 315 L340 190" fill="none" stroke="#10B981" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

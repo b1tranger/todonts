@@ -1,0 +1,938 @@
+/* CSS Reset & Variable Definitions */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Font Family Tokens */
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
+
+  /* Theme Tokens - Light Mode Default */
+  --bg-app: #F9F9FB;
+  --bg-pane: #FFFFFF;
+  --bg-header: #FFFFFF;
+  --bg-status: #F1F5F9;
+  
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  
+  --accent-primary: #1A365D;       /* Dark Blue */
+  --accent-secondary: #2563EB;     /* Royal Blue */
+  --accent-success: #059669;       /* Emerald Green */
+  
+  --card-bg: #F0F4F8;              /* Soft Light Blue/Gray tint */
+  --card-border: 1px solid #E2E8F0;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  --border-color: #E2E8F0;
+  --border-focus: #2563EB;
+  
+  --checkbox-bg: #FFFFFF;
+  --checkbox-border: #94A3B8;
+  --checkbox-checked: #1A365D;
+  --checkbox-glow: rgba(26, 54, 93, 0.1);
+  
+  --toast-bg: #1A365D;
+  --toast-text: #FFFFFF;
+  
+  --transition-speed: 0.25s;
+  --transition-curve: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  --header-height: 72px;
+  --status-height: 28px;
+}
+
+[data-theme="dark"] {
+  /* Theme Tokens - Dark Mode */
+  --bg-app: #121214;               /* Extremely dark gray */
+  --bg-pane: #1E1E24;              /* Dark Gray base */
+  --bg-header: #1A1A1F;
+  --bg-status: #15151A;
+  
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #64748B;
+  
+  --accent-primary: #E2E8F0;       /* Off-white */
+  --accent-secondary: #38BDF8;     /* Light Blue */
+  --accent-success: #10B981;       /* Vibrant Success Green */
+  
+  --card-bg: #2A2A35;              /* Muted Dark Gray */
+  --card-border: 1px solid rgba(167, 243, 208, 0.15); /* soft green border glow */
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(16, 185, 129, 0.03);
+
+  --border-color: #334155;
+  --border-focus: #10B981;
+  
+  --checkbox-bg: #1E1E24;
+  --checkbox-border: #475569;
+  --checkbox-checked: #10B981;
+  --checkbox-glow: rgba(16, 185, 129, 0.15);
+  
+  --toast-bg: #10B981;
+  --toast-text: #0D1B2A;
+}
+
+/* Global Styles */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: background-color var(--transition-speed) var(--transition-curve),
+              color var(--transition-speed) var(--transition-curve);
+}
+
+/* Header Styles */
+.app-header {
+  height: var(--header-height);
+  background-color: var(--bg-header);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: background-color var(--transition-speed) var(--transition-curve),
+              border-color var(--transition-speed) var(--transition-curve);
+}
+
+.header-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-logo {
+  width: 40px;
+  height: 40px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.app-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  background: linear-gradient(135deg, var(--text-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.app-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.stats-panel {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stat-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--bg-app);
+  padding: 0.5rem 0.8rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.stat-value {
+  color: var(--accent-success);
+}
+
+.profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: var(--bg-app);
+  padding: 0.5rem 0.8rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+  font-size: 0.85rem;
+}
+
+.username-inline-edit {
+  background: transparent;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  width: 90px;
+  outline: none;
+  cursor: pointer;
+  transition: width 0.2s ease;
+}
+
+.username-inline-edit:focus {
+  border-bottom: 2px solid var(--border-focus);
+  cursor: text;
+  width: 120px;
+}
+
+/* Button UI system */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all var(--transition-speed) var(--transition-curve);
+  user-select: none;
+}
+
+.btn-primary {
+  background-color: var(--checkbox-checked);
+  color: var(--bg-header);
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.btn-secondary:hover {
+  background-color: var(--border-color);
+  transform: translateY(-1px);
+}
+
+.btn-file-label {
+  position: relative;
+}
+
+.hidden-file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Main Layout Split Pane */
+.app-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  height: calc(100vh - var(--header-height) - var(--status-height));
+  background-color: var(--bg-app);
+  transition: grid-template-columns var(--transition-speed) var(--transition-curve);
+}
+
+/* Layout centering when editor is hidden */
+.app-layout.editor-hidden {
+  grid-template-columns: 1fr;
+  display: flex;
+  justify-content: center;
+}
+
+.app-layout.editor-hidden .pane-left {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  border-right: 1px solid var(--border-color);
+  border-left: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--bg-pane);
+  overflow: hidden;
+  transition: background-color var(--transition-speed) var(--transition-curve);
+}
+
+.pane-left {
+  border-right: 1px solid var(--border-color);
+  position: relative; /* Context for absolute editor toggle positioning */
+  z-index: 10; /* Stack above pane-right so the overflow toggle button sits on top */
+}
+
+/* Editor Toggle Button */
+.toggle-editor-btn {
+  position: absolute;
+  top: 50%;
+  right: -16px;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--bg-pane);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000; /* Ensure button overlays adjacent panes/content */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all var(--transition-speed) var(--transition-curve);
+  outline: none;
+}
+
+.toggle-editor-btn:hover {
+  background-color: var(--border-color);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.toggle-editor-btn span {
+  display: inline-block;
+  font-size: 0.85rem;
+  transition: transform 0.3s ease;
+}
+
+/* Rotate toggle button arrow when editor is unhidden */
+.app-layout:not(.editor-hidden) .toggle-editor-btn span {
+  transform: rotate(180deg);
+}
+
+/* Hamburger button styling */
+.menu-toggle-btn {
+  display: none; /* hidden on desktop */
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 1010;
+  padding: 0;
+}
+
+.menu-toggle-btn span {
+  width: 100%;
+  height: 2px;
+  background-color: var(--text-primary);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.menu-toggle-btn.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.menu-toggle-btn.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle-btn.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+.pane-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--bg-header);
+  transition: background-color var(--transition-speed) var(--transition-curve),
+              border-color var(--transition-speed) var(--transition-curve);
+}
+
+.pane-title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.pane-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  background-color: var(--bg-app);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.editor-badge {
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+}
+
+.pane-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* Right Editor Pane Custom Setup */
+.editor-container {
+  padding: 0;
+  position: relative;
+}
+
+#markdown-editor {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  background-color: var(--bg-pane);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  padding: 2rem;
+  transition: background-color var(--transition-speed) var(--transition-curve),
+              color var(--transition-speed) var(--transition-curve);
+}
+
+#markdown-editor::placeholder {
+  color: var(--text-muted);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 4rem 2rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Markdown Rendering Styles (Left Pane) */
+#interactive-view {
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+
+#interactive-view h1,
+#interactive-view h2,
+#interactive-view h3,
+#interactive-view h4,
+#interactive-view h5,
+#interactive-view h6 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+#interactive-view h1 { font-size: 1.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3rem; }
+#interactive-view h2 { font-size: 1.4rem; }
+#interactive-view h3 { font-size: 1.2rem; }
+#interactive-view h4 { font-size: 1.05rem; }
+
+#interactive-view p {
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+#interactive-view blockquote {
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+  border-left: 4px solid var(--border-focus);
+  background-color: var(--bg-app);
+  color: var(--text-secondary);
+  font-style: italic;
+  border-radius: 0 6px 6px 0;
+}
+
+#interactive-view code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background-color: var(--bg-app);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  color: var(--accent-secondary);
+}
+
+#interactive-view a {
+  color: var(--accent-secondary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+#interactive-view a:hover {
+  text-decoration: underline;
+}
+
+/* Tables styling */
+#interactive-view table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+#interactive-view th,
+#interactive-view td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+#interactive-view th {
+  background-color: var(--bg-app);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+#interactive-view tr:last-child td {
+  border-bottom: none;
+}
+
+#interactive-view tr:hover td {
+  background-color: var(--bg-app);
+}
+
+/* Lists styling */
+#interactive-view ul,
+#interactive-view ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+#interactive-view li {
+  margin-bottom: 0.25rem;
+  color: var(--text-secondary);
+}
+
+/* Horizontal dividers */
+#interactive-view hr {
+  height: 1px;
+  border: none;
+  background-color: var(--border-color);
+  margin: 2rem 0;
+}
+
+/* Custom Visual Container <<hr>> */
+.todont-card {
+  background-color: var(--card-bg);
+  border: var(--card-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  box-shadow: var(--card-shadow);
+  transition: all var(--transition-speed) var(--transition-curve);
+}
+
+.todont-card p:last-child {
+  margin-bottom: 0;
+}
+
+/* Checkbox and Task Item Styling */
+.todont-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  border-radius: 8px;
+  background-color: var(--bg-pane);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-speed) var(--transition-curve);
+  user-select: none;
+}
+
+.todont-item:hover {
+  border-color: var(--text-muted);
+  transform: translateX(2px);
+}
+
+/* Custom Checkbox Label Wrapper */
+.checkbox-container {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  margin-top: 0.15rem;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Checkbox Style */
+.custom-checkbox {
+  height: 20px;
+  width: 20px;
+  background-color: var(--checkbox-bg);
+  border: 2px solid var(--checkbox-border);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hover style */
+.checkbox-container:hover input ~ .custom-checkbox {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 4px var(--checkbox-glow);
+}
+
+/* Checked state */
+.checkbox-container input:checked ~ .custom-checkbox {
+  background-color: var(--checkbox-checked);
+  border-color: var(--checkbox-checked);
+}
+
+/* Checkmark indicator (X icon for To-Don't) */
+.custom-checkbox::after {
+  content: "";
+  display: none;
+  position: absolute;
+  /* Draw an "X" or cross symbol for avoidance */
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 11px;
+  color: #FFFFFF;
+}
+
+.checkbox-container input:checked ~ .custom-checkbox::after {
+  display: block;
+}
+
+/* Standard task cross */
+.custom-checkbox::after {
+  content: "✕";
+}
+
+/* Persistent habit checkbox styling (maybe a blue/purple check or distinct cross) */
+.custom-checkbox.persistent {
+  border-radius: 50%; /* Circle shape for habits */
+}
+
+/* Recurring Daily Constraint (Glowing emerald ring, locked on check) */
+.custom-checkbox.recurring {
+  border-color: var(--accent-success);
+}
+.checkbox-container input:checked ~ .custom-checkbox.recurring {
+  background-color: var(--accent-success);
+  border-color: var(--accent-success);
+}
+
+.checkbox-container input:disabled ~ .custom-checkbox {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Checkbox label text */
+.task-text {
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: all var(--transition-speed) var(--transition-curve);
+  flex: 1;
+}
+
+/* Checked Strikethrough & Grey-out States */
+.todont-item.checked {
+  border-color: var(--border-color);
+  background-color: var(--bg-app);
+}
+
+.todont-item.checked .task-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Streak and Badges */
+.success-badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--accent-success);
+  border-radius: 4px;
+  font-weight: 600;
+  margin-left: auto;
+  align-self: center;
+}
+
+.streak-display {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #EF4444; /* Flame orange/red */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+/* Read only (Recurring Checked) */
+.todont-item.read-only {
+  opacity: 0.85;
+}
+
+.todont-item.read-only:hover {
+  transform: none;
+  border-color: var(--border-color);
+}
+
+/* Footer Status Bar Styling */
+.app-status-bar {
+  height: var(--status-height);
+  background-color: var(--bg-status);
+  border-top: 1px solid var(--border-color);
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  z-index: 100;
+}
+
+.status-left, .status-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-dot.green { background-color: var(--accent-success); }
+.status-dot.red { background-color: #EF4444; }
+.status-dot.yellow { background-color: #F59E0B; }
+
+/* Toast reminder pop-ups */
+.toast-container {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.toast {
+  background-color: var(--toast-bg);
+  color: var(--toast-text);
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 0, 0, 0.05);
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(1rem);
+  animation: toast-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+             toast-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) 4.7s forwards;
+}
+
+.toast-icon {
+  font-size: 1rem;
+}
+
+.toast-close-btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.7;
+  padding: 0.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-close-btn:hover {
+  opacity: 1;
+}
+
+/* Toast Animations */
+@keyframes toast-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-muted);
+}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  /* Keep mobile application window locked for natural app feel */
+  body {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .app-header {
+    height: var(--header-height);
+    padding: 0 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-logo-group {
+    display: none !important; /* Hide logo group on mobile to make room for stats */
+  }
+
+  .header-controls {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .menu-toggle-btn {
+    display: flex; /* Show hamburger */
+  }
+
+  .action-buttons {
+    position: fixed;
+    top: 0;
+    right: -280px;
+    width: 280px;
+    height: 100vh;
+    background-color: var(--bg-pane);
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 6rem 1.5rem 1.5rem 1.5rem;
+    gap: 1.25rem;
+    z-index: 1000;
+    transition: right var(--transition-speed) var(--transition-curve);
+    box-shadow: -4px 0 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .action-buttons.active {
+    right: 0;
+  }
+
+  .action-buttons .btn,
+  .action-buttons .btn-file-label {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+  }
+
+  /* Split row layout when editor is unhidden */
+  .app-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    height: calc(100vh - var(--header-height) - var(--status-height));
+  }
+
+  /* Single column layout when editor is hidden */
+  .app-layout.editor-hidden {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+  }
+
+  .app-layout.editor-hidden .pane-left {
+    max-width: 100%;
+    margin: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .pane-left {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  /* Reposition toggle button to look beautiful on mobile */
+  .app-layout.editor-hidden .toggle-editor-btn {
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Move toggle button to divider when unhidden on mobile */
+  .app-layout:not(.editor-hidden) .toggle-editor-btn {
+    top: auto;
+    bottom: -16px;
+    right: 16px;
+    transform: none;
+  }
+
+  .app-layout:not(.editor-hidden) .toggle-editor-btn span {
+    transform: rotate(90deg); /* point down to indicate layout */
+  }
+}

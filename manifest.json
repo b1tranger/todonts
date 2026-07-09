@@ -1,0 +1,17 @@
+{
+  "name": "To-Don't List",
+  "short_name": "To-Don't",
+  "description": "A local-first, offline-ready habit reform app tracking things to avoid.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1E1E24",
+  "theme_color": "#1A365D",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

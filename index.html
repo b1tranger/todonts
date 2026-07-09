@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Don't — Habit Reform App</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="To-Don't is a privacy-first, offline-capable Progressive Web App for habit reform. Track your constraints and visual markdown habits in a clean, dual-pane environment.">
+  <meta name="theme-color" content="#1A365D">
+  
+  <!-- Manifest -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="apple-touch-icon" href="./icon.svg">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-logo-group">
+      <img src="./icon.svg" alt="To-Don't Logo" class="app-logo" id="logo-img">
+      <div class="header-title-group">
+        <h1 class="app-title">To-Don't</h1>
+        <p class="app-subtitle">Habit Reform through Mindful Restraint</p>
+      </div>
+    </div>
+    
+    <!-- Stats & Controls -->
+    <div class="header-controls">
+      <div class="stats-panel">
+        <div class="stat-badge" title="Total successfully avoided tasks">
+          <span class="stat-icon"><i class="fa-solid fa-trophy"></i></span>
+          <span class="stat-label">Successes:</span>
+          <span id="total-successes-count" class="stat-value">0</span>
+        </div>
+        <div class="profile-badge">
+          <span class="profile-icon"><i class="fa-solid fa-user"></i></span>
+          <input type="text" id="username-input" class="username-inline-edit" value="Anonymous" title="Click to edit username">
+        </div>
+      </div>
+      
+      <button id="menu-toggle-btn" class="menu-toggle-btn" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      
+      <div class="action-buttons">
+        <button id="install-btn" class="btn btn-primary hidden" title="Install as Desktop/Mobile App">
+          <span class="btn-icon"><i class="fa-solid fa-download"></i></span> Install App
+        </button>
+        <button id="theme-toggle" class="btn btn-secondary" title="Toggle Light/Dark Theme" aria-label="Toggle theme">
+          <span id="theme-toggle-icon"><i class="fa-solid fa-moon"></i></span>
+        </button>
+        <label for="import-file" class="btn btn-secondary btn-file-label" title="Import a .md backup file">
+          <span><i class="fa-solid fa-file-import"></i></span> Import
+          <input type="file" id="import-file" accept=".md" class="hidden-file-input">
+        </label>
+        <button id="export-btn" class="btn btn-primary" title="Export markdown list backup">
+          <span><i class="fa-solid fa-file-export"></i></span> Export
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Dual-Pane Layout -->
+  <main class="app-layout editor-hidden">
+    <!-- Left Pane: Interactive UI View -->
+    <section class="pane pane-left" aria-label="Interactive Tasks View">
+      <div class="pane-header">
+        <h2 class="pane-title">Interactive Tasks</h2>
+        <div class="pane-badge">Active View</div>
+      </div>
+      <div class="pane-content" id="interactive-view">
+        <!-- Rendered tasks list will go here dynamically -->
+        <div class="empty-state">
+          <p>No tasks rendered. Type something in the Custom Tasks editor or import a backup file to get started.</p>
+        </div>
+      </div>
+      <!-- Toggle button positioned on the right border -->
+      <button id="toggle-editor-btn" class="toggle-editor-btn" title="Toggle Markdown Editor" aria-label="Toggle Markdown Editor">
+        <span id="toggle-editor-icon"><i class="fa-solid fa-arrow-right"></i></span>
+      </button>
+    </section>
+
+    <!-- Right Pane: Custom Tasks Markdown Canvas -->
+    <section class="pane pane-right hidden" id="editor-pane" aria-label="Custom Tasks Markdown Editor">
+      <div class="pane-header">
+        <h2 class="pane-title">Custom Tasks (Markdown)</h2>
+        <div class="pane-badge editor-badge">Live Editor</div>
+      </div>
+      <div class="pane-content editor-container">
+        <textarea id="markdown-editor" spellcheck="false" placeholder="Write your To-Don't constraints in Markdown format..."></textarea>
+      </div>
+    </section>
+  </main>
+
+  <!-- Status Bar -->
+  <footer class="app-status-bar">
+    <div class="status-left">
+      <span class="status-dot green" id="sw-status-dot"></span>
+      <span id="sw-status-text">Checking Service Worker...</span>
+    </div>
+    <div class="status-right">
+      <span id="sync-status-text">Last synched: Never</span>
+    </div>
+  </footer>
+
+  <!-- Toast Reminders Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Main Logic -->
+  <script src="./app.js"></script>
+</body>
+</html>
