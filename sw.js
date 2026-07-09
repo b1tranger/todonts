@@ -1,11 +1,19 @@
-const CACHE_NAME = 'todont-cache-v1';
+const CACHE_NAME = 'todont-cache-v2';
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './app.js',
   './manifest.json',
-  './icon.svg'
+  './icon.svg',
+  './render.html',
+  './render.js',
+  './render.css',
+  './documentation.md',
+  './guide.md'
+
+  // ,
+  // './'
 ];
 
 // Install event - caching static assets
@@ -40,7 +48,7 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') {
     return;
   }
-  
+
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
       if (cachedResponse) {
