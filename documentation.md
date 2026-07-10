@@ -43,7 +43,15 @@ The custom parser split-compiles the document body:
 
 ## 🕒 Version History
 
-### v1.4.0 (Current)
+### v1.4.1 (Current)
+- **Fix**: Resolved offline loading of markdown documentation and user guide files through the reader page.
+- **Enhancement**: Pre-cached third-party CDN libraries (Marked, DOMPurify, KaTeX, Highlight.js, and Font Awesome) in the Service Worker.
+- **Enhancement**: Updated service worker cache matching to ignore search query parameters (using `{ ignoreSearch: true }`), permitting pages like `render.html?file=guide.md` to load offline.
+- **Enhancement**: Implemented dynamic runtime caching for successful GET requests (e.g., dynamically requested webfonts or markdown files).
+- **Enhancement**: Added standalone Service Worker registration inside `render.js`.
+- **Enhancement**: Unified Font Awesome CDN version link to `6.7.2` across the main dashboard and documentation reader.
+
+### v1.4.0
 - **Feature**: Success point system. Award random points on check (Standard: 1–2, Persistent: 1–5, Daily Recurring: 1–9) with a floating "+X Points!" text animation.
 - **Feature**: Clickable Successes badge in the header that slides up a points distribution explanation bottom sheet modal.
 - **Feature**: Checkbox chunk reordering engine. Checking a standard task (`- [ ]`) moves it to the bottom of its contiguous chunk under a `<hr>` divider.

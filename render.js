@@ -930,9 +930,25 @@
             updateThemeUI(storedTheme);
         }
 
+        // Register Service Worker for Offline Support
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js')
+                        .then(reg => {
+                            console.log('Service Worker registered with scope: ', reg.scope);
+                        })
+                        .catch(err => {
+                            console.warn('Service Worker registration failed: ', err);
+                        });
+                });
+            }
+        }
+
         // Initial Load
         syncTheme();
         setupEventListeners();
+        registerServiceWorker();
 
         window.addEventListener('popstate', () => {
             const urlParams = new URLSearchParams(window.location.search);
