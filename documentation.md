@@ -45,11 +45,14 @@ The custom parser split-compiles the document body:
 
 ### v1.4.1 (Current)
 - **Fix**: Resolved offline loading of markdown documentation and user guide files through the reader page.
-- **Enhancement**: Pre-cached third-party CDN libraries (Marked, DOMPurify, KaTeX, Highlight.js, and Font Awesome) in the Service Worker.
+- **Feature**: Localized all external CDN dependencies (Marked, DOMPurify, Highlight.js, KaTeX, Font Awesome, and Google Fonts) into a local `dependencies/` directory using an automated Node.js download and font rewriting script.
+- **Enhancement**: Implemented automatic fallback loading mechanics for all stylesheets (`onerror` attribute) and scripts (`document.write` checks) in `index.html` and `render.html` to load from the local `dependencies/` folder if CDNs fail.
+- **Enhancement**: Updated the Service Worker (`sw.js` and cache name `v28`) to pre-cache both the remote CDN URLs and the localized fallback resources, ensuring total offline resilience.
 - **Enhancement**: Updated service worker cache matching to ignore search query parameters (using `{ ignoreSearch: true }`), permitting pages like `render.html?file=guide.md` to load offline.
 - **Enhancement**: Implemented dynamic runtime caching for successful GET requests (e.g., dynamically requested webfonts or markdown files).
 - **Enhancement**: Added standalone Service Worker registration inside `render.js`.
 - **Enhancement**: Unified Font Awesome CDN version link to `6.7.2` across the main dashboard and documentation reader.
+
 
 ### v1.4.0
 - **Feature**: Success point system. Award random points on check (Standard: 1–2, Persistent: 1–5, Daily Recurring: 1–9) with a floating "+X Points!" text animation.
