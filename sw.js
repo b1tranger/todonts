@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todont-cache-v29';
+const CACHE_NAME = 'todont-cache-v30';
 const ASSETS = [
   './',
   './index.html',

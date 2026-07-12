@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>To-Don't — Habit Reform App</title>
-  
+
   <!-- SEO Meta Tags -->
-  <meta name="description" content="To-Don't is a privacy-first, offline-capable Progressive Web App for habit reform. Track your constraints and visual markdown habits in a clean, dual-pane environment.">
+  <meta name="description"
+    content="To-Don't is a privacy-first, offline-capable Progressive Web App for habit reform. Track your constraints and visual markdown habits in a clean, dual-pane environment.">
   <meta name="theme-color" content="#1A365D">
-  
+
   <!-- Manifest -->
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/svg+xml" href="./icon.svg">
   <link rel="apple-touch-icon" href="./icon.svg">
-  
+
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" onerror="this.onerror=null;this.href='./dependencies/font-awesome/css/all.min.css'">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    onerror="this.onerror=null;this.href='./dependencies/font-awesome/css/all.min.css'">
   <link rel="stylesheet" href="./style.css">
 </head>
+
 <body>
 
   <!-- App Preloader / Splash Screen -->
@@ -39,7 +43,7 @@
         <p class="app-subtitle">Habit Reform through Mindful Restraint</p>
       </div>
     </div>
-    
+
     <!-- Stats & Controls -->
     <div class="header-controls">
       <div class="stats-panel">
@@ -50,16 +54,17 @@
         </button>
         <div class="profile-badge">
           <span class="profile-icon"><i class="fa-solid fa-user"></i></span>
-          <input type="text" id="username-input" class="username-inline-edit" value="Anonymous" title="Click to edit username">
+          <input type="text" id="username-input" class="username-inline-edit" value="Anonymous"
+            title="Click to edit username">
         </div>
       </div>
-      
+
       <button id="menu-toggle-btn" class="menu-toggle-btn" aria-label="Toggle menu">
         <span></span>
         <span></span>
         <span></span>
       </button>
-      
+
       <div class="action-buttons">
         <!-- Sidebar Brand Header (Mobile Only) -->
         <div class="sidebar-brand">
@@ -114,7 +119,8 @@
     </section>
 
     <!-- Toggle button positioned on the right border, outside both panes -->
-    <button id="toggle-editor-btn" class="toggle-editor-btn" title="Toggle Markdown Editor" aria-label="Toggle Markdown Editor">
+    <button id="toggle-editor-btn" class="toggle-editor-btn" title="Toggle Markdown Editor"
+      aria-label="Toggle Markdown Editor">
       <span id="toggle-editor-icon"><i class="fa-solid fa-arrow-right"></i></span>
     </button>
 
@@ -125,7 +131,8 @@
         <div class="pane-badge editor-badge">Live Editor</div>
       </div>
       <div class="pane-content editor-container">
-        <textarea id="markdown-editor" spellcheck="false" placeholder="Write your To-Don't constraints in Markdown format..."></textarea>
+        <textarea id="markdown-editor" spellcheck="false"
+          placeholder="Write your To-Don't constraints in Markdown format..."></textarea>
       </div>
     </section>
   </main>
@@ -137,9 +144,11 @@
       <span id="sw-status-text">Checking Service Worker...</span>
     </div>
     <div class="status-middle">
-      <a href="render.html?file=guide.md" class="footer-link" title="Open User Guide"><i class="fa-solid fa-book"></i> User Guide</a>
+      <a href="render.html?file=guide.md" class="footer-link" title="Open User Guide"><i class="fa-solid fa-book"></i>
+        User Guide</a>
       <span class="footer-separator">|</span>
-      <a href="render.html?file=documentation.md" class="footer-link" title="Open Technical Documentation"><i class="fa-solid fa-circle-info"></i> Documentation</a>
+      <a href="render.html?file=documentation.md" class="footer-link" title="Open Technical Documentation"><i
+          class="fa-solid fa-circle-info"></i> Documentation</a>
     </div>
     <div class="status-right">
       <span id="sync-status-text">Last synched: Never</span>
@@ -157,18 +166,22 @@
         <button class="points-modal-close" id="close-points-modal" aria-label="Close modal">&times;</button>
       </div>
       <div class="points-modal-body">
-        <p class="points-modal-desc">Earn points by successfully avoiding constraints and maintaining your To-Don'ts:</p>
+        <p class="points-modal-desc">Earn points by successfully avoiding constraints and maintaining your To-Don'ts:
+        </p>
         <ul class="points-list">
           <li class="points-list-item">
-            <span class="points-type"><span class="custom-checkbox-preview standard inline-preview"></span> Regular Task <code>- [ ]</code></span>
+            <span class="points-type"><span class="custom-checkbox-preview standard inline-preview"></span> Regular
+              Task</span>
             <span class="points-value">+1 to +2 Points (Random)</span>
           </li>
           <li class="points-list-item">
-            <span class="points-type"><span class="custom-checkbox-preview persistent inline-preview"></span> Persistent Habit <code>- &lt;[ ]&gt;</code></span>
+            <span class="points-type"><span class="custom-checkbox-preview persistent inline-preview"></span> Persistent
+              Habit</span>
             <span class="points-value">+1 to +5 Points (Random)</span>
           </li>
           <li class="points-list-item">
-            <span class="points-type"><span class="custom-checkbox-preview recurring inline-preview"></span> Daily Constraint <code>- &lt;&lt;[ ]&gt;&gt;</code></span>
+            <span class="points-type"><span class="custom-checkbox-preview recurring inline-preview"></span> Daily
+              Constraint</span>
             <span class="points-value">+1 to +9 Points (Random)</span>
           </li>
         </ul>
@@ -182,7 +195,9 @@
             <strong id="modal-total-days-passed">0.00</strong>
           </div>
         </div>
-        <p class="points-modal-footer-note"><i class="fa-solid fa-circle-info"></i> Your Successes score in the header is calculated as Total Points divided by Total Days passed (rounded up to the nearest integer) since profile load. Unless you are consistent, your score will decrease over time.</p>
+        <p class="points-modal-footer-note"><i class="fa-solid fa-circle-info"></i> Your Successes score in the header
+          is calculated as Total Points divided by Total Days passed (rounded up to the nearest integer) since profile
+          load. Unless you are consistent, your score will decrease over time.</p>
       </div>
     </div>
   </div>
@@ -190,4 +205,5 @@
   <!-- Main Logic -->
   <script src="./app.js"></script>
 </body>
+
 </html>
