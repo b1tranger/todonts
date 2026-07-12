@@ -1558,6 +1558,30 @@ button.stat-badge:active {
   color: var(--accent-success);
 }
 
+.points-stats-summary {
+  background-color: var(--bg-pane);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.points-stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.points-stats-row strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
 .points-modal-footer-note {
   font-size: 0.8rem;
   color: var(--text-muted);

@@ -20,13 +20,14 @@ The core philosophy of the "To-Don't" project centers on the deliberate subtract
    - **Standard Task (`- [ ] Don't`)**: A simple one-time constraint that strikes through, awards +1 to +2 points, moves to the bottom of its checkbox chunk under a `<hr>` divider when checked, and locks as read-only.
    - **Persistent Habit (`- <[ ]> Don't`)**: Ongoing boundaries that stay active across days. Awards +1 to +5 points on check, and triggers a 6-hour cooldown upon checking (disabling check toggling, displaying a countdown badge at the top-right border, and scheduling a push notification and auto-uncheck when it expires).
    - **Daily Recurring Constraint (`- <<[ ]>> Don't`)**: A commitment that locks to read-only when checked today, awards +1 to +9 points, increments your successes/fire streak (`🔥`), and automatically resets tomorrow.
-3. **Gamified Success Points & Cooldown Notifications**:
+3. **Gamified Success Points with Time Decay**:
    - Earn random points based on the constraint bracket checked (+1 to +2 for standard, +1 to +5 for persistent, +1 to +9 for recurring).
-   - Points are added to the user's total successes and saved. They are lifetime successes milestones and are never deducted.
+   - The **Successes** count shown in the header is a dynamic score calculated as **Total Points Earned** divided by **Total Days Passed** since profile load (allowing fractional values). This introduces a natural time-decay mechanic where scores decrease over time unless habits are consistently controlled.
+   - Profile YAML front matter includes `initial_load_date` and `days_passed` to track elapsed time offline.
+   - Raw total points and total elapsed days are displayed inside the **Points Distribution** modal, accessed by clicking the successes trophy badge in the header.
    - Triggers a floating text animation (`+X Points!`) near the cursor/checkbox when unchecked tasks are avoided/checked.
    - Enforces a 6-hour cooldown on checked persistent habits with top-right countdown badges.
    - Integrates browser Web Notifications API to trigger push notifications when cooldowns complete.
-   - Clicking the successes trophy badge in the header displays a pop-up modal drawer detailing the point rules.
 4. **Automatic "Don't" Suffix Placeholders**:
    - Adding or inserting new checklist lines automatically formats them with a default `"Don't "` prefix.
    - A grayed-out placeholder suffix (`New Task`, `New Habit`, or `New Daily Constraint`) is rendered via CSS if the text consists only of the `"Don't "` prefix, disappearing immediately as you type.

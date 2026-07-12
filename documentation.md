@@ -43,7 +43,13 @@ The custom parser split-compiles the document body:
 
 ## 🕒 Version History
 
-### v1.4.1 (Current)
+### v1.5.0 (Current)
+- **Feature**: Recalculated Success Score (Time-Decay Rating). The successes counter displayed in the header is now a dynamic rating calculated by dividing the total lifetime successes (points) by the total elapsed days since the profile was initialized.
+- **Feature**: Profile Metadata Tracking. Introduced `initial_load_date` and `days_passed` variables in the profile YAML header to record the timestamp of the first profile load and track elapsed days as fractional values.
+- **Feature**: Dynamic Score Decay. Points naturally decay as time passes, encouraging consistent adherence to habit constraints to prevent the successes score from dropping.
+- **Feature**: Modal Stats Dashboard. Added total successes (points) and total days passed metrics to the Points Distribution Modal.
+
+### v1.4.1
 - **Fix**: Resolved offline loading of markdown documentation and user guide files through the reader page.
 - **Feature**: Localized all external CDN dependencies (Marked, DOMPurify, Highlight.js, KaTeX, Font Awesome, and Google Fonts) into a local `dependencies/` directory using an automated Node.js download and font rewriting script.
 - **Enhancement**: Implemented automatic fallback loading mechanics for all stylesheets (`onerror` attribute) and scripts (`document.write` checks) in `index.html` and `render.html` to load from the local `dependencies/` folder if CDNs fail.

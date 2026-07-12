@@ -40,12 +40,24 @@ To-Don't lets you write your constraints using standard Markdown syntax inside t
 ---
 
 ## 🏆 Success Point System
-To-Don't features a gamified point system to reward restraint. Clicking on the **Successes** badge in the header displays a pop-up sheet detailing the point rules:
+To-Don't features a gamified point system to reward restraint. Clicking on the **Successes** badge in the header displays a pop-up sheet detailing the point rules and current statistics:
 - **Regular Task (`- [ ]`)**: Awards a random integer between +1 and +2 points on check.
 - **Persistent Habit (`- <[ ]>`)**: Awards a random integer between +1 and +5 points on check.
 - **Daily Constraint (`- <<[ ]>>`)**: Awards a random integer between +1 and +9 points on check.
 
-When checking a task, a clean floating point indicator animates near your cursor or checkbox showing the point gain. Points represent lifetime success milestones and are never deducted when unchecking a task.
+When checking a task, a clean floating point indicator animates near your cursor or checkbox showing the point gain. Points are accumulated as lifetime successes.
+
+### 🕒 Time-Decay Score Calculation
+The successes counter displayed in the header is a dynamic score calculated as:
+$$\text{Successes Score} = \frac{\text{Total Points Earned}}{\text{Total Days Passed since profile load}}$$
+
+Because time continues to elapse, your successes score will automatically decline over time if you do not consistently maintain your To-Don't habits. This mechanic rewards active and consistent restraint.
+
+To track this offline without servers, your profile's YAML front matter automatically records:
+- `initial_load_date`: The date and time when your profile was first created.
+- `days_passed`: The total fractional days elapsed since the initial load.
+
+You can view your raw lifetime points and exact elapsed days anytime inside the **Points Distribution** modal by clicking the trophy successes badge in the header.
 
 ---
 

@@ -9,6 +9,8 @@ const AppState = {
   profile: {
     username: "Anonymous",
     total_successes: 0,
+    initial_load_date: "",
+    days_passed: 0,
     global_last_synced: ""
   },
   history: [],
@@ -22,6 +24,8 @@ const DEFAULT_MARKDOWN = `---
 profile:
   username: "Anonymous"
   total_successes: 42
+  initial_load_date: "2026-07-09T15:09:39Z"
+  days_passed: 3.0
   global_last_synced: "2026-07-09T15:09:39Z"
 history:
   - id: "dont-check-emails-before-noon"
@@ -93,6 +97,8 @@ function parseYAML(yamlContent) {
     profile: {
       username: "Anonymous",
       total_successes: 0,
+      initial_load_date: "",
+      days_passed: 0,
       global_last_synced: new Date().toISOString()
     },
     history: []
@@ -123,6 +129,10 @@ function parseYAML(yamlContent) {
           data.profile.total_successes = parseInt(val, 10) || 0;
         } else if (key === "username") {
           data.profile.username = val;
+        } else if (key === "initial_load_date") {
+          data.profile.initial_load_date = val;
+        } else if (key === "days_passed") {
+          data.profile.days_passed = parseFloat(val) || 0;
         } else if (key === "global_last_synced") {
           data.profile.global_last_synced = val;
         }
@@ -171,6 +181,8 @@ function stringifyYAML(data) {
   lines.push("profile:");
   lines.push(`  username: "${data.profile.username || "Anonymous"}"`);
   lines.push(`  total_successes: ${data.profile.total_successes || 0}`);
+  lines.push(`  initial_load_date: "${data.profile.initial_load_date || new Date().toISOString()}"`);
+  lines.push(`  days_passed: ${data.profile.days_passed !== undefined ? data.profile.days_passed : 0}`);
   lines.push(`  global_last_synced: "${data.profile.global_last_synced || new Date().toISOString()}"`);
 
   if (data.history && data.history.length > 0) {
@@ -593,6 +605,8 @@ function loadDataFromMarkdown(markdown) {
     AppState.profile = {
       username: "Anonymous",
       total_successes: 0,
+      initial_load_date: new Date().toISOString(),
+      days_passed: 0,
       global_last_synced: new Date().toISOString()
     };
     AppState.history = [];
@@ -610,6 +624,24 @@ function loadDataFromMarkdown(markdown) {
     const yamlData = parseYAML(yamlText);
     AppState.profile = yamlData.profile;
     AppState.history = yamlData.history;
+
+    let modified = false;
+    if (!AppState.profile.initial_load_date) {
+      AppState.profile.initial_load_date = new Date().toISOString();
+      modified = true;
+    }
+    if (AppState.profile.days_passed === undefined || isNaN(AppState.profile.days_passed)) {
+      const initialDate = new Date(AppState.profile.initial_load_date);
+      const diffMs = new Date() - initialDate;
+      AppState.profile.days_passed = parseFloat((diffMs / (1000 * 60 * 60 * 24)).toFixed(4)) || 0;
+      modified = true;
+    }
+
+    if (modified) {
+      AppState.rawMarkdown = stringifyYAML({ profile: AppState.profile, history: AppState.history }) + "\n" + AppState.bodyText;
+      const rematch = AppState.rawMarkdown.match(yamlRegex);
+      AppState.yamlLinesCount = rematch[0].split('\n').length - 1;
+    }
   }
 }
 
@@ -633,15 +665,45 @@ function updateStatusBar() {
   }
 }
 
+// Helper: Recalculate days passed since initial load date
+function recalculateDaysPassed() {
+  if (!AppState.profile.initial_load_date) {
+    AppState.profile.initial_load_date = new Date().toISOString();
+  }
+  let initialDate = new Date(AppState.profile.initial_load_date);
+  if (isNaN(initialDate.getTime())) {
+    initialDate = new Date();
+    AppState.profile.initial_load_date = initialDate.toISOString();
+  }
+  const now = new Date();
+  const diffMs = now - initialDate;
+  AppState.profile.days_passed = parseFloat(Math.max(diffMs / (1000 * 60 * 60 * 24), 0).toFixed(4));
+}
+
 // Update Header Displays
 function updateHeaderStats() {
+  // Always recalculate days passed before updating stats
+  recalculateDaysPassed();
+
   const successCountEl = document.getElementById('total-successes-count');
   if (successCountEl) {
-    successCountEl.textContent = AppState.profile.total_successes;
+    const daysPassedCapped = Math.max(AppState.profile.days_passed, 0.0001);
+    const score = (AppState.profile.total_successes / daysPassedCapped).toFixed(2);
+    successCountEl.textContent = score;
   }
   const usernameInput = document.getElementById('username-input');
   if (usernameInput) {
     usernameInput.value = AppState.profile.username || "Anonymous";
+  }
+
+  // Update modal points and days passed stats
+  const modalSuccessesEl = document.getElementById('modal-total-successes');
+  const modalDaysPassedEl = document.getElementById('modal-total-days-passed');
+  if (modalSuccessesEl) {
+    modalSuccessesEl.textContent = AppState.profile.total_successes;
+  }
+  if (modalDaysPassedEl) {
+    modalDaysPassedEl.textContent = AppState.profile.days_passed.toFixed(2);
   }
 }
 
@@ -1034,6 +1096,7 @@ function handleCheckboxChange(e) {
     if (match) {
       bodyText = AppState.rawMarkdown.substring(match[0].length);
     }
+    recalculateDaysPassed();
     const newYamlHeader = stringifyYAML({ profile: AppState.profile, history: AppState.history });
     AppState.rawMarkdown = newYamlHeader + "\n" + bodyText;
   }
@@ -1085,6 +1148,7 @@ function checkDayFlip() {
     if (match) {
       bodyText = AppState.rawMarkdown.substring(match[0].length);
     }
+    recalculateDaysPassed();
     const newYamlHeader = stringifyYAML({ profile: AppState.profile, history: AppState.history });
     AppState.rawMarkdown = newYamlHeader + "\n" + bodyText;
 
@@ -1106,6 +1170,7 @@ function triggerBackupReminder() {
   if (match) {
     bodyText = AppState.rawMarkdown.substring(match[0].length);
   }
+  recalculateDaysPassed();
   const newYamlHeader = stringifyYAML({ profile: AppState.profile, history: AppState.history });
   AppState.rawMarkdown = newYamlHeader + "\n" + bodyText;
 
@@ -1168,6 +1233,7 @@ function exportBackup() {
   if (match) {
     bodyText = AppState.rawMarkdown.substring(match[0].length);
   }
+  recalculateDaysPassed();
   const newYamlHeader = stringifyYAML({ profile: AppState.profile, history: AppState.history });
   AppState.rawMarkdown = newYamlHeader + "\n" + bodyText;
 
@@ -1317,6 +1383,7 @@ function initAppListeners() {
       if (match) {
         bodyText = AppState.rawMarkdown.substring(match[0].length);
       }
+      recalculateDaysPassed();
       const newYamlHeader = stringifyYAML({ profile: AppState.profile, history: AppState.history });
       AppState.rawMarkdown = newYamlHeader + "\n" + bodyText;
 
