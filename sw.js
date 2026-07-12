@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todont-cache-v28';
+const CACHE_NAME = 'todont-cache-v29';
 const ASSETS = [
   './',
   './index.html',
@@ -38,7 +38,7 @@ const ASSETS = [
   './dependencies/katex/katex.min.js',
   './dependencies/katex/auto-render.min.js',
   './dependencies/katex/katex.min.css',
-  
+
   // Localized Font Awesome
   './dependencies/font-awesome/css/all.min.css',
   './dependencies/font-awesome/webfonts/fa-solid-900.woff2',

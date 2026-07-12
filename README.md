@@ -22,7 +22,7 @@ The core philosophy of the "To-Don't" project centers on the deliberate subtract
    - **Daily Recurring Constraint (`- <<[ ]>> Don't`)**: A commitment that locks to read-only when checked today, awards +1 to +9 points, increments your successes/fire streak (`🔥`), and automatically resets tomorrow.
 3. **Gamified Success Points with Time Decay**:
    - Earn random points based on the constraint bracket checked (+1 to +2 for standard, +1 to +5 for persistent, +1 to +9 for recurring).
-   - The **Successes** count shown in the header is a dynamic score calculated as **Total Points Earned** divided by **Total Days Passed** since profile load (allowing fractional values). This introduces a natural time-decay mechanic where scores decrease over time unless habits are consistently controlled.
+   - The **Successes** count shown in the header is a dynamic score calculated as **Total Points Earned** divided by **Total Days Passed (rounded up to the nearest integer)** since profile load. This introduces a natural time-decay mechanic where scores decrease over time unless habits are consistently controlled.
    - Profile YAML front matter includes `initial_load_date` and `days_passed` to track elapsed time offline.
    - Raw total points and total elapsed days are displayed inside the **Points Distribution** modal, accessed by clicking the successes trophy badge in the header.
    - Triggers a floating text animation (`+X Points!`) near the cursor/checkbox when unchecked tasks are avoided/checked.

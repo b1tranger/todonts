@@ -687,8 +687,9 @@ function updateHeaderStats() {
 
   const successCountEl = document.getElementById('total-successes-count');
   if (successCountEl) {
-    const daysPassedCapped = Math.max(AppState.profile.days_passed, 0.0001);
-    const score = (AppState.profile.total_successes / daysPassedCapped).toFixed(2);
+    const daysCeil = Math.ceil(AppState.profile.days_passed);
+    const divisor = daysCeil === 0 ? 1 : daysCeil;
+    const score = (AppState.profile.total_successes / divisor).toFixed(2);
     successCountEl.textContent = score;
   }
   const usernameInput = document.getElementById('username-input');

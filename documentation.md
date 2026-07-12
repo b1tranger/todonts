@@ -44,7 +44,7 @@ The custom parser split-compiles the document body:
 ## 🕒 Version History
 
 ### v1.5.0 (Current)
-- **Feature**: Recalculated Success Score (Time-Decay Rating). The successes counter displayed in the header is now a dynamic rating calculated by dividing the total lifetime successes (points) by the total elapsed days since the profile was initialized.
+- **Feature**: Recalculated Success Score (Time-Decay Rating). The successes counter displayed in the header is now a dynamic rating calculated by dividing the total lifetime successes (points) by the ceiling integer of the elapsed days since the profile was initialized.
 - **Feature**: Profile Metadata Tracking. Introduced `initial_load_date` and `days_passed` variables in the profile YAML header to record the timestamp of the first profile load and track elapsed days as fractional values.
 - **Feature**: Dynamic Score Decay. Points naturally decay as time passes, encouraging consistent adherence to habit constraints to prevent the successes score from dropping.
 - **Feature**: Modal Stats Dashboard. Added total successes (points) and total days passed metrics to the Points Distribution Modal.

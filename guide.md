@@ -49,7 +49,7 @@ When checking a task, a clean floating point indicator animates near your cursor
 
 ### 🕒 Time-Decay Score Calculation
 The successes counter displayed in the header is a dynamic score calculated as:
-$$\text{Successes Score} = \frac{\text{Total Points Earned}}{\text{Total Days Passed since profile load}}$$
+$$\text{Successes Score} = \frac{\text{Total Points Earned}}{\lceil\text{Total Days Passed since profile load}\rceil}$$
 
 Because time continues to elapse, your successes score will automatically decline over time if you do not consistently maintain your To-Don't habits. This mechanic rewards active and consistent restraint.
 
