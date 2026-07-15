@@ -36,14 +36,19 @@ The custom parser split-compiles the document body:
 - **Card Separators (`<<hr>>`)**: Segment-based groupings wrap adjacent text nodes in a `.todont-card` container class.
 - **Checkbox Tokenizer**:
   - `- [ ]` $\rightarrow$ Standard task (checked: `- [x]`). When checked, it moves to the bottom of its contiguous checkbox chunk under a `<hr>` divider, awards +1 to +2 success points, and is locked from being unchecked in the Interactive View.
-  - `- <[ ]>` $\rightarrow$ Persistent habit (checked: `- <[x]>`). Stays active across days and awards +1 to +5 success points on check. A 6-hour cooldown applies upon checking before it can be checked again, showing a countdown badge and triggering a push notification upon completion.
+  - `- <[ ]>` $\rightarrow$ Persistent habit (checked: `- <[x]>`). Stays active across days, increments streak on check, and awards +1 to +5 success points. A 6-hour cooldown applies upon checking before it can be checked again, showing a countdown badge and triggering a push notification upon completion.
   - `- <<[ ]>>` $\rightarrow$ Recurring daily constraint (checked: `- <<[x]>>`). Increments streak, awards +1 to +9 success points, and locks to read-only.
 
 ---
 
 ## 🕒 Version History
 
-### v1.5.0 (Current)
+### v1.6.0 (Current)
+- **Feature**: Balanced Success Score. Successes rating in the header is now calculated as `(Total Points + Total Streaks) / (Days Passed + Active Tasks)`. This balances the points by rewarding consistent task completion streaks and penalizing task hoarding (backlog/active tasks).
+- **Feature**: Modal Breakdown Expansion. Added `Total active tasks` and `Total active streaks` rows to the Points modal, alongside a styled formula disclaimer box.
+- **Fix**: Persistent habit streaks are now tracked, incremented each time they are checked, and rendered with the same flame/streak icon badge style as daily constraints.
+
+### v1.5.0
 - **Feature**: Recalculated Success Score (Time-Decay Rating). The successes counter displayed in the header is now a dynamic rating calculated by dividing the total lifetime successes (points) by the ceiling integer of the elapsed days since the profile was initialized.
 - **Feature**: Profile Metadata Tracking. Introduced `initial_load_date` and `days_passed` variables in the profile YAML header to record the timestamp of the first profile load and track elapsed days as fractional values.
 - **Feature**: Dynamic Score Decay. Points naturally decay as time passes, encouraging consistent adherence to habit constraints to prevent the successes score from dropping.

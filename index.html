@@ -185,10 +185,23 @@
             <span class="points-value">+1 to +9 Points (Random)</span>
           </li>
         </ul>
+        <div class="points-disclaimer">
+          <p><i class="fa-solid fa-circle-info"></i> <strong>Disclaimer:</strong> <br>"Do not chase points, but rather
+            be
+            earnest in the pursuit of your goals."</p>
+        </div>
         <div class="points-stats-summary">
           <div class="points-stats-row">
             <span>Total Points Earned:</span>
             <strong id="modal-total-successes">0</strong>
+          </div>
+          <div class="points-stats-row">
+            <span>Total active tasks:</span>
+            <strong id="modal-total-tasks">0</strong>
+          </div>
+          <div class="points-stats-row">
+            <span>Total active streaks:</span>
+            <strong id="modal-total-streaks">0</strong>
           </div>
           <div class="points-stats-row">
             <span>Total Days Passed:</span>
@@ -196,7 +209,7 @@
           </div>
         </div>
         <p class="points-modal-footer-note"><i class="fa-solid fa-circle-info"></i> Your Successes score in the header
-          is calculated as Total Points divided by Total Days passed (rounded up to the nearest integer) since profile
+          is calculated as (Total Points + Total Streaks) divided by (Total Days Passed + Active Tasks) since profile
           load. Unless you are consistent, your score will decrease over time.</p>
       </div>
     </div>

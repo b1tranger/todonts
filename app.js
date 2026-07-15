@@ -469,13 +469,16 @@ function compileTextLines(linesObj, historyData) {
       const cooldownHtml = onCooldown ? `<span class="cooldown-badge" title="6-hour cooldown active"><i class="fa-solid fa-hourglass-half"></i> Cooldown: ${cooldownTimeStr}</span>` : '';
       const disabledAttr = onCooldown ? 'disabled' : '';
 
+      const streak = historyItem ? historyItem.streak : 0;
+      const streakHtml = streak > 0 ? `<span class="streak-display" title="${streak} day streak"><i class="fa-solid fa-fire"></i> ${streak}</span>` : '';
+
       html += `
         <div class="todont-item persistent-habit ${isChecked ? 'checked' : ''} ${onCooldown ? 'read-only' : ''}" data-line="${globalLineIndex}">
           <label class="checkbox-container">
             <input type="checkbox" ${isChecked ? 'checked' : ''} ${disabledAttr} data-line="${globalLineIndex}" data-type="persistent">
             <span class="custom-checkbox persistent"></span>
           </label>
-          <span class="task-text ${placeholderClass}" contenteditable="${isChecked ? 'false' : 'true'}" data-placeholder="continue this New Habit" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>
+          <span class="task-text ${placeholderClass}" contenteditable="${isChecked ? 'false' : 'true'}" data-placeholder="continue this New Habit" data-line="${globalLineIndex}">${parseInlineMarkdown(taskText)}</span>${streakHtml}
           ${cooldownHtml}
           <button class="delete-task-btn" title="Delete task" data-line="${globalLineIndex}">
             <i class="fa-solid fa-xmark"></i>
@@ -680,16 +683,47 @@ function recalculateDaysPassed() {
   AppState.profile.days_passed = parseFloat(Math.max(diffMs / (1000 * 60 * 60 * 24), 0).toFixed(4));
 }
 
+// Helper: Calculate total tasks added and total active streaks
+function getPointsStats() {
+  const lines = AppState.bodyText.split(/\r?\n/);
+  let totalTasks = 0;
+  let totalStreaks = 0;
+
+  for (const line of lines) {
+    const recMatch = line.match(/^\s*-\s+<<\[([ xX])\]>>\s+(.*)$/);
+    const persMatch = line.match(/^\s*-\s+<\[([ xX])\]>\s+(.*)$/);
+    const stdMatch = line.match(/^\s*-\s+\[([ xX])\]\s+(.*)$/);
+
+    if (recMatch || persMatch || stdMatch) {
+      totalTasks++;
+
+      let taskText = "";
+      if (recMatch) taskText = recMatch[2];
+      else if (persMatch) taskText = persMatch[2];
+      else if (stdMatch) taskText = stdMatch[2];
+
+      const taskId = slugify(taskText);
+      const historyItem = AppState.history.find(item => item.id === taskId);
+      if (historyItem && historyItem.streak) {
+        totalStreaks += historyItem.streak;
+      }
+    }
+  }
+
+  return { totalTasks, totalStreaks };
+}
+
 // Update Header Displays
 function updateHeaderStats() {
   // Always recalculate days passed before updating stats
   recalculateDaysPassed();
 
+  const stats = getPointsStats();
+
   const successCountEl = document.getElementById('total-successes-count');
   if (successCountEl) {
-    const daysCeil = Math.ceil(AppState.profile.days_passed);
-    const divisor = daysCeil === 0 ? 1 : daysCeil;
-    const score = (AppState.profile.total_successes / divisor).toFixed(2);
+    const divisor = (AppState.profile.days_passed + stats.totalTasks) === 0 ? 1 : (AppState.profile.days_passed + stats.totalTasks);
+    const score = ((AppState.profile.total_successes + stats.totalStreaks) / divisor).toFixed(2);
     successCountEl.textContent = score;
   }
   const usernameInput = document.getElementById('username-input');
@@ -700,11 +734,20 @@ function updateHeaderStats() {
   // Update modal points and days passed stats
   const modalSuccessesEl = document.getElementById('modal-total-successes');
   const modalDaysPassedEl = document.getElementById('modal-total-days-passed');
+  const modalTasksEl = document.getElementById('modal-total-tasks');
+  const modalStreaksEl = document.getElementById('modal-total-streaks');
+
   if (modalSuccessesEl) {
     modalSuccessesEl.textContent = AppState.profile.total_successes;
   }
   if (modalDaysPassedEl) {
     modalDaysPassedEl.textContent = AppState.profile.days_passed.toFixed(2);
+  }
+  if (modalTasksEl) {
+    modalTasksEl.textContent = stats.totalTasks;
+  }
+  if (modalStreaksEl) {
+    modalStreaksEl.textContent = stats.totalStreaks;
   }
 }
 
@@ -1006,10 +1049,12 @@ function handleCheckboxChange(e) {
         if (!historyItem) {
           historyItem = {
             id: taskId,
+            streak: 1,
             last_checked: now.toISOString()
           };
           AppState.history.push(historyItem);
         } else {
+          historyItem.streak = (historyItem.streak || 0) + 1;
           historyItem.last_checked = now.toISOString();
         }
       }
