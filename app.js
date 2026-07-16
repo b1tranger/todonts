@@ -1514,6 +1514,20 @@ function initAppListeners() {
         editorPane.classList.add('hidden');
       } else {
         editorPane.classList.remove('hidden');
+        
+        // Scroll past the YAML Front Matter
+        const editor = document.getElementById('markdown-editor');
+        if (editor && AppState.yamlLinesCount > 0) {
+          setTimeout(() => {
+            const computedStyle = window.getComputedStyle(editor);
+            let lineHeight = parseFloat(computedStyle.lineHeight);
+            if (isNaN(lineHeight) || lineHeight <= 0) {
+              const fontSize = parseFloat(computedStyle.fontSize) || 14;
+              lineHeight = fontSize * 1.6;
+            }
+            editor.scrollTop = (AppState.yamlLinesCount + 1) * lineHeight;
+          }, 50);
+        }
       }
     });
   }

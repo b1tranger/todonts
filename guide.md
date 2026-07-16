@@ -91,6 +91,9 @@ Click the **`Clear All`** button in the header toolbar of the Interactive Tasks 
 ### 6. Auto-Reordering
 Streak-based tasks (Persistent Habits and Daily Recurring Constraints) automatically reorder themselves inside their checklist chunk whenever you check a task. They are sorted in ascending order of their streak counts (lowest streak/highest priority at the top, highest streak/lowest priority at the bottom). This keeps the boundaries you are struggling with at the top of your checklist to maximize focus. Regular tasks (`- [ ]`) don't have streaks, are not sorted, and retain their relative positions in the list.
 
+### 7. Opening the Markdown Canvas
+Clicking the toggle arrow button on the right border reveals or hides the raw Markdown Live Editor pane. When unhidden, the canvas automatically scrolls past the YAML Front Matter configuration block. This aligns the view immediately to the first line of your task constraints so you can edit your lists without manual scrolling.
+
 ---
 
 ## 🔔 Background Notifications
