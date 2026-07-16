@@ -37,6 +37,12 @@ The core philosophy of the "To-Don't" project centers on the deliberate subtract
    - Service worker caches all static assets for offline usage.
    - App Install prompt banner is integrated into the header controls/hamburger drawer menu on mobile viewports.
    - PWA standalone exit confirmation: prompts `"Cofirm closing window?"` when close/reload is triggered or the device back button is pressed, and displays an explicit "Close App" exit button inside the mobile drawer.
+7. **Theme-Harmonized Tables**:
+   - Build and render standard Markdown tables in the Interactive View.
+   - Features a clean card container, custom borders, distinct headers, and opacity-based zebra striping and hover highlights that dynamically match both light and dark themes.
+8. **Image Embedding & Rich Link Previews**:
+   - Contextual parsing of `![alt](url)` markdown syntax.
+   - Embeds images as responsive inline blocks for direct image links, or compiles a rich link preview card (displaying name, domain, favicon via safe client-side fallback, and a direct open trigger) for standard URLs.
 
 ---
 

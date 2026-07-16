@@ -37,6 +37,36 @@ To-Don't lets you write your constraints using standard Markdown syntax inside t
   ```
 - **Behavior**: Any text content block immediately preceding or following a `<<hr>>` tag (bounded by headings or document edges) is automatically wrapped in a card layout with rounded corners (`border-radius: 12px`).
 
+### 5. Markdown Tables
+- **Syntax**:
+  ```markdown
+  | Day | Fast Food Avoided | Sugar Free |
+  | --- | --- | --- |
+  | Mon | Yes | Yes |
+  | Tue | Yes | No |
+  ```
+- **Behavior**: Standard GFM markdown tables are fully supported and rendered inside the Interactive View. They feature a clean card backdrop, borders, custom headers, hover transitions, and zebra striping that automatically matches both light and dark themes.
+- **Colspan & Rowspan Merging**:
+  - Writing `<<^^>>` inside a cell merges it with the cell to its left (emulates `colspan`).
+  - Writing `<<^>>` inside a cell merges it with the cell above it (emulates `rowspan`).
+  - Example:
+    ```markdown
+    | Header 1 | Header 2 |
+    | --- | --- |
+    | Spans 2 columns | <<^^>> |
+    | Spans 2 rows | Row 1 |
+    | <<^>> | Row 2 |
+    ```
+
+### 6. Images & Link Previews (`![Alt]\(URL\)`)
+- **Syntax**:
+  - Direct Image: `![Healthy Foods](./icon.svg)`
+  - Web Link Preview: `![GitHub](https://github.com)`
+- **Behavior**: The `![alt]\(url\)` notation compiles contextually:
+  - If the URL has a common image extension (like `.png`, `.jpg`, `.jpeg`, `.gif`, `.svg`, `.webp`), it is displayed as a responsive inline image.
+  - If it is a generic website link, the app compiles a rich, custom link preview card displaying the site favicon, alt text/title, domain name, and an "Open" button. Favicons resolve automatically and fall back to a generic link icon if offline or invalid.
+
+
 ---
 
 ## 🏆 Success Point System

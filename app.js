@@ -203,6 +203,29 @@ function stringifyYAML(data) {
   return lines.join("\n");
 }
 
+// Render image or link preview card for ![]() syntax
+function renderLinkPreview(alt, url) {
+  // Check if it's a direct image URL
+  const isImage = /\.(png|jpe?g|gif|svg|webp)(?:\?.*)?$/i.test(url);
+  if (isImage) {
+    return `<img src="${url}" alt="${alt}" class="embedded-image">`;
+  }
+  
+  // Parse domain name for favicon and url display
+  let domain = "";
+  try {
+    const parsedUrl = new URL(url);
+    domain = parsedUrl.hostname;
+  } catch (e) {
+    domain = url;
+  }
+  
+  const title = alt.trim() || "Link Preview";
+  const faviconUrl = (domain.includes('.') && !domain.startsWith('http') && !url.startsWith('./') && !url.startsWith('render.html')) ? `https://www.google.com/s2/favicons?sz=64&domain=${domain}` : '';
+  
+  return `<div class="link-preview-card"><div class="link-preview-header">${faviconUrl ? `<img src="${faviconUrl}" class="link-preview-favicon" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><i class="fa-solid fa-link link-preview-icon" style="display:none;"></i>` : '<i class="fa-solid fa-link link-preview-icon"></i>'}<div class="link-preview-details"><span class="link-preview-title">${title}</span><a href="${url}" target="_blank" rel="noopener noreferrer" class="link-preview-url">${domain}</a></div></div><a href="${url}" target="_blank" rel="noopener noreferrer" class="link-preview-action-btn"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</a></div>`;
+}
+
 // Inline Markdown Parser
 function parseInlineMarkdown(text) {
   if (!text) return "";
@@ -219,16 +242,18 @@ function parseInlineMarkdown(text) {
   html = html.replace(/_(.*?)_/g, "<em>$1</em>");
   // Inline code
   html = html.replace(/`(.*?)`/g, "<code>$1</code>");
+  // Link Previews (![Alt](URL))
+  html = html.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, url) => {
+    return renderLinkPreview(alt, url);
+  });
   // Links
   html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 
   return html;
 }
 
-// Table Renderer
 function renderTable(rows) {
   if (rows.length === 0) return "";
-  let html = "<table>";
   let hasHeader = false;
 
   if (rows.length > 1) {
@@ -242,40 +267,103 @@ function renderTable(rows) {
     const parts = rowStr.split("|");
     if (parts.length > 1) {
       if (parts[0].trim() === "") parts.shift();
-      if (parts[parts.length - 1] && parts[parts.length - 1].trim() === "") parts.pop();
+      if (parts[parts.length - 1].trim() === "") parts.pop();
     }
     return parts.map(cell => parseInlineMarkdown(cell.trim()));
   };
 
-  if (hasHeader) {
-    html += "<thead><tr>";
-    const headerCells = parseRowCells(rows[0]);
-    for (const cell of headerCells) {
-      html += `<th>${cell}</th>`;
-    }
-    html += "</tr></thead><tbody>";
-    for (let i = 2; i < rows.length; i++) {
-      html += "<tr>";
-      const cells = parseRowCells(rows[i]);
-      for (const cell of cells) {
-        html += `<td>${cell}</td>`;
-      }
-      html += "</tr>";
-    }
-    html += "</tbody>";
-  } else {
-    html += "<tbody>";
-    for (let i = 0; i < rows.length; i++) {
-      html += "<tr>";
-      const cells = parseRowCells(rows[i]);
-      for (const cell of cells) {
-        html += `<td>${cell}</td>`;
-      }
-      html += "</tr>";
-    }
-    html += "</tbody>";
+  // Parse all valid rows into a grid structure
+  const grid = [];
+  for (let i = 0; i < rows.length; i++) {
+    if (hasHeader && i === 1) continue; // Skip divider line
+
+    const cells = parseRowCells(rows[i]);
+    const rowCells = cells.map(cellText => {
+      return {
+        text: cellText,
+        rowspan: 1,
+        colspan: 1,
+        isMerged: false
+      };
+    });
+    grid.push(rowCells);
   }
 
+  // Process horizontal merges (colspan) using <<^^>> or &lt;&lt;^^&gt;&gt;
+  for (let r = 0; r < grid.length; r++) {
+    const row = grid[r];
+    for (let c = 0; c < row.length; c++) {
+      if (row[c].text === "&lt;&lt;^^&gt;&gt;" || row[c].text === "<<^^>>") {
+        let leftCol = c - 1;
+        while (leftCol >= 0 && row[leftCol].isMerged) {
+          leftCol--;
+        }
+        if (leftCol >= 0) {
+          row[leftCol].colspan++;
+          row[c].isMerged = true;
+        }
+      }
+    }
+  }
+
+  // Process vertical merges (rowspan) using <<^>> or &lt;&lt;^&gt;&gt;
+  for (let r = 0; r < grid.length; r++) {
+    const row = grid[r];
+    for (let c = 0; c < row.length; c++) {
+      if (row[c].text === "&lt;&lt;^&gt;&gt;" || row[c].text === "<<^>>") {
+        let topRow = r - 1;
+        while (topRow >= 0 && grid[topRow][c] && grid[topRow][c].isMerged) {
+          topRow--;
+        }
+        if (topRow >= 0 && grid[topRow][c]) {
+          grid[topRow][c].rowspan++;
+          row[c].isMerged = true;
+        }
+      }
+    }
+  }
+
+  // Render processed grid to HTML
+  let html = "<table>";
+  let inBody = false;
+
+  for (let r = 0; r < grid.length; r++) {
+    const isHeaderRow = (hasHeader && r === 0);
+
+    if (isHeaderRow) {
+      html += "<thead><tr>";
+    } else {
+      if (!inBody) {
+        if (hasHeader) html += "</thead>";
+        html += "<tbody>";
+        inBody = true;
+      }
+      html += "<tr>";
+    }
+
+    const row = grid[r];
+    for (let c = 0; c < row.length; c++) {
+      const cell = row[c];
+      if (cell.isMerged) continue;
+
+      const tag = isHeaderRow ? "th" : "td";
+      const attrs = [];
+      if (cell.rowspan > 1) attrs.push(`rowspan="${cell.rowspan}"`);
+      if (cell.colspan > 1) attrs.push(`colspan="${cell.colspan}"`);
+      const attrStr = attrs.length > 0 ? " " + attrs.join(" ") : "";
+
+      html += `<${tag}${attrStr}>${cell.text}</${tag}>`;
+    }
+
+    html += "</tr>";
+    if (isHeaderRow) {
+      html += "</thead>";
+    }
+  }
+
+  if (inBody) {
+    html += "</tbody>";
+  }
   html += "</table>";
   return html;
 }
@@ -559,8 +647,8 @@ function compileTextLines(linesObj, historyData) {
     // Table Rows
     const tableMatch = line.match(/^\s*\|(.*)\|\s*$/);
     if (tableMatch) {
-      html += closeActiveBlocks();
       if (!inTable) {
+        html += closeActiveBlocks();
         inTable = true;
         tableRows = [];
       }
@@ -1538,16 +1626,42 @@ function initAppListeners() {
           const index = text.indexOf(targetText);
           if (index !== -1) {
             const textBefore = text.substring(0, index);
-            const linesCount = textBefore.split(/\r?\n/).length - 1;
 
             setTimeout(() => {
               const computedStyle = window.getComputedStyle(editor);
-              let lineHeight = parseFloat(computedStyle.lineHeight);
-              if (isNaN(lineHeight) || lineHeight <= 0) {
-                const fontSize = parseFloat(computedStyle.fontSize) || 14;
-                lineHeight = fontSize * 1.6;
-              }
-              const targetScrollTop = linesCount * lineHeight;
+              
+              // Calculate content width of textarea to account for word wrapping
+              const paddingLeft = parseFloat(computedStyle.paddingLeft) || 0;
+              const paddingRight = parseFloat(computedStyle.paddingRight) || 0;
+              const contentWidth = editor.clientWidth - paddingLeft - paddingRight;
+
+              // Create a dummy element to measure the height of the text before the target line
+              const div = document.createElement('div');
+              
+              // Copy typography styles
+              const fontProps = [
+                'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'fontVariant',
+                'letterSpacing', 'wordSpacing', 'textTransform', 'lineHeight',
+                'textIndent'
+              ];
+              fontProps.forEach(prop => {
+                div.style[prop] = computedStyle[prop];
+              });
+              
+              div.style.position = 'absolute';
+              div.style.visibility = 'hidden';
+              div.style.whiteSpace = 'pre-wrap';
+              div.style.wordWrap = 'break-word';
+              div.style.width = contentWidth + 'px';
+              div.style.padding = '0';
+              div.style.margin = '0';
+              div.style.border = 'none';
+              div.style.boxSizing = 'content-box';
+              
+              div.textContent = textBefore;
+              document.body.appendChild(div);
+              const targetScrollTop = div.clientHeight;
+              document.body.removeChild(div);
               
               // Apply scroll multiple times using requestAnimationFrame to ensure browser paints and layout finishes reflowing
               let attempts = 0;

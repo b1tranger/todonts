@@ -49,6 +49,9 @@ The custom parser split-compiles the document body:
 - **Feature**: Periodic Sync Integration. Configured Periodic Sync query permissions to periodically trigger notification checks from the operating system.
 - **Feature**: Live Editor YAML Auto-Scroll. Toggling open the Markdown Live Editor now automatically scrolls the textarea past the YAML Front Matter configuration block using a hidden target marker (`<!-- TASKS START HERE -->`), aligning the viewport immediately to the start of the task constraints.
 - **Feature**: PWA Exit Confirmation & Exit Button. When running in PWA standalone mode, the app intercepts back button presses (History API) and window closure to prompt `"Cofirm closing window?"`. Added an explicit "Close App" button inside the mobile responsive sidebar footer.
+- **Feature**: Theme-Harmonized Table Rendering. Tables in the Interactive Tasks view are compiled and styled with custom borders, card-matching backgrounds, and theme-neutral hover and zebra striping that look premium in both light and dark themes. Added support for `rowspan` and `colspan` cell merging using `<<^>>` and `<<^^>>` syntaxes.
+- **Feature**: Image Embedding & Link Previews. Integrated custom `![alt]\(url\)` parsing: direct image links are displayed as responsive, shadow-framed elements, while standard web links compile into clean preview cards displaying favicon, alt name, domain, and an "Open" trigger.
+
 
 ### v1.6.0
 - **Feature**: Balanced Success Score. Successes rating in the header is now calculated as `(Total Points + Total Streaks) / (Days Passed + Active Tasks)`. This balances the points by rewarding consistent task completion streaks and penalizing task hoarding (backlog/active tasks).
