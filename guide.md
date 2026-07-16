@@ -92,12 +92,18 @@ Click the **`Clear All`** button in the header toolbar of the Interactive Tasks 
 Streak-based tasks (Persistent Habits and Daily Recurring Constraints) automatically reorder themselves inside their checklist chunk whenever you check a task. They are sorted in ascending order of their streak counts (lowest streak/highest priority at the top, highest streak/lowest priority at the bottom). This keeps the boundaries you are struggling with at the top of your checklist to maximize focus. Regular tasks (`- [ ]`) don't have streaks, are not sorted, and retain their relative positions in the list.
 
 ### 7. Opening the Markdown Canvas
-Clicking the toggle arrow button on the right border reveals or hides the raw Markdown Live Editor pane. When unhidden, the canvas automatically scrolls past the YAML Front Matter configuration block. This aligns the view immediately to the first line of your task constraints so you can edit your lists without manual scrolling.
+Clicking the toggle arrow button on the right border reveals or hides the raw Markdown Live Editor pane. When unhidden, the canvas automatically scans for a hidden `<!-- TASKS START HERE -->` comment and scrolls the textarea precisely to it. This aligns the view immediately to the first line of your task constraints so you can edit your lists without manual scrolling, regardless of your screen size.
 
 ---
 
-## 🔔 Background Notifications
-When installed as a Progressive Web App (PWA), To-Don't runs background checks via its Service Worker:
+## 📱 Progressive Web App (PWA) Features
+When installed as a Progressive Web App (PWA), To-Don't runs as a native app and unlocks standalone capabilities:
+
+### 1. Close App & Exit Confirmation
+- **"Close App" Button**: An explicit exit button is added inside the mobile responsive sidebar footer.
+- **Exit Confirmation**: To prevent accidental closures, attempting to close the app, reload, or press the device's hardware/virtual **Back button** will prompt a `"Cofirm closing window?"` dialog. Confirming will close the app/tab, while canceling will keep it open.
+
+### 2. Background Notifications
 - **Every 6 Hours**: It pushes a notification reminding you to avoid a random active (unchecked) constraint from your checklist.
 - **Every 24 Hours**: It pushes a summary alert showing the count of outstanding tasks: `"You need to avoid these [total_active_tasks] tasks!"`.
 

@@ -36,13 +36,14 @@ The core philosophy of the "To-Don't" project centers on the deliberate subtract
 6. **Offline & Installation Ready**:
    - Service worker caches all static assets for offline usage.
    - App Install prompt banner is integrated into the header controls/hamburger drawer menu on mobile viewports.
+   - PWA standalone exit confirmation: prompts `"Cofirm closing window?"` when close/reload is triggered or the device back button is pressed, and displays an explicit "Close App" exit button inside the mobile drawer.
 
 ---
 
 ## 📂 Codebase Architecture
-- [index.html](file:///c:/Users/gsmur/Documents/GitHub/[personal]/todonts/index.html) — App structure, split-pane viewports, and toast notices.
-- [style.css](file:///c:/Users/gsmur/Documents/GitHub/[personal]/todonts/style.css) — Theme variables (with high contrast light slate and dark themes), preloader animations, and layout structures.
-- [app.js](file:///c:/Users/gsmur/Documents/GitHub/[personal]/todonts/app.js) — The engine running YAML/Markdown parsers, theme settings, local storage, calendar checkers, and click handlers.
-- [guide.md](file:///c:/Users/gsmur/Documents/GitHub/[personal]/todonts/guide.md) — Comprehensive user guide on avoiding habits and managing cards.
-- [documentation.md](file:///c:/Users/gsmur/Documents/GitHub/[personal]/todonts/documentation.md) — System specifications and full version releases.
-- [render.html](file:///c:/Users/gsmur/Documents/GitHub/[personal]/todonts/render.html) — Static document reader used to preview user guides and system documentation.
+- [index.html](Documents/GitHub/[personal]/todonts/index.html) — App structure, split-pane viewports, and toast notices.
+- [style.css](Documents/GitHub/[personal]/todonts/style.css) — Theme variables (with high contrast light slate and dark themes), preloader animations, and layout structures.
+- [app.js](Documents/GitHub/[personal]/todonts/app.js) — The engine running YAML/Markdown parsers, theme settings, local storage, calendar checkers, and click handlers.
+- [guide.md](Documents/GitHub/[personal]/todonts/guide.md) — Comprehensive user guide on avoiding habits and managing cards.
+- [documentation.md](Documents/GitHub/[personal]/todonts/documentation.md) — System specifications and full version releases.
+- [render.html](Documents/GitHub/[personal]/todonts/render.html) — Static document reader used to preview user guides and system documentation.

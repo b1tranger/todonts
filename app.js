@@ -384,6 +384,12 @@ function compileTextLines(linesObj, historyData) {
     const trimmed = line.trim();
     const globalLineIndex = lineObj.lineIndex;
 
+    // Ignore TASKS START HERE marker comment in Interactive View
+    if (trimmed === "<!-- TASKS START HERE -->") {
+      html += closeActiveBlocks();
+      continue;
+    }
+
     // Horizontal Rule
     if (trimmed.match(/^(?:-{3,}|\*{3,}|_{3,})$/) || trimmed === "<hr>") {
       html += closeActiveBlocks();
@@ -601,7 +607,12 @@ function loadDataFromMarkdown(markdown) {
   let yamlText = "";
   if (match) {
     yamlText = match[1];
-    AppState.bodyText = markdown.substring(match[0].length);
+    let body = markdown.substring(match[0].length);
+    if (!body.includes("<!-- TASKS START HERE -->")) {
+      body = "<!-- TASKS START HERE -->\n" + body;
+    }
+    AppState.bodyText = body;
+    AppState.rawMarkdown = match[0] + body;
     AppState.yamlLinesCount = match[0].split('\n').length - 1;
   } else {
     // If front matter is missing, bootstrap it
@@ -613,11 +624,15 @@ function loadDataFromMarkdown(markdown) {
       global_last_synced: new Date().toISOString()
     };
     AppState.history = [];
-    AppState.bodyText = markdown;
+    let body = markdown;
+    if (!body.includes("<!-- TASKS START HERE -->")) {
+      body = "<!-- TASKS START HERE -->\n" + body;
+    }
+    AppState.bodyText = body;
     AppState.yamlLinesCount = 0;
 
     // Prefix YAML
-    AppState.rawMarkdown = stringifyYAML({ profile: AppState.profile, history: AppState.history }) + "\n" + markdown;
+    AppState.rawMarkdown = stringifyYAML({ profile: AppState.profile, history: AppState.history }) + "\n" + body;
 
     const rematch = AppState.rawMarkdown.match(yamlRegex);
     AppState.yamlLinesCount = rematch[0].split('\n').length - 1;
@@ -1515,18 +1530,37 @@ function initAppListeners() {
       } else {
         editorPane.classList.remove('hidden');
         
-        // Scroll past the YAML Front Matter
+        // Scroll past the YAML Front Matter to <!-- TASKS START HERE -->
         const editor = document.getElementById('markdown-editor');
-        if (editor && AppState.yamlLinesCount > 0) {
-          setTimeout(() => {
-            const computedStyle = window.getComputedStyle(editor);
-            let lineHeight = parseFloat(computedStyle.lineHeight);
-            if (isNaN(lineHeight) || lineHeight <= 0) {
-              const fontSize = parseFloat(computedStyle.fontSize) || 14;
-              lineHeight = fontSize * 1.6;
-            }
-            editor.scrollTop = (AppState.yamlLinesCount + 1) * lineHeight;
-          }, 50);
+        if (editor) {
+          const targetText = "<!-- TASKS START HERE -->";
+          const text = editor.value;
+          const index = text.indexOf(targetText);
+          if (index !== -1) {
+            const textBefore = text.substring(0, index);
+            const linesCount = textBefore.split(/\r?\n/).length - 1;
+
+            setTimeout(() => {
+              const computedStyle = window.getComputedStyle(editor);
+              let lineHeight = parseFloat(computedStyle.lineHeight);
+              if (isNaN(lineHeight) || lineHeight <= 0) {
+                const fontSize = parseFloat(computedStyle.fontSize) || 14;
+                lineHeight = fontSize * 1.6;
+              }
+              const targetScrollTop = linesCount * lineHeight;
+              
+              // Apply scroll multiple times using requestAnimationFrame to ensure browser paints and layout finishes reflowing
+              let attempts = 0;
+              function applyScroll() {
+                editor.scrollTop = targetScrollTop;
+                attempts++;
+                if (attempts < 5) {
+                  requestAnimationFrame(applyScroll);
+                }
+              }
+              applyScroll();
+            }, 50);
+          }
         }
       }
     });
@@ -1977,12 +2011,51 @@ function registerServiceWorker() {
   }
 }
 
+// Close and Back Button Confirmation logic in PWA mode
+function initCloseConfirmation() {
+  const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+  if (isPWA) {
+    // 1. Show Close App button in sidebar
+    const closeBtn = document.getElementById('close-btn');
+    if (closeBtn) {
+      closeBtn.classList.remove('hidden');
+      closeBtn.addEventListener('click', () => {
+        if (confirm("Cofirm closing window?")) {
+          window.close();
+        }
+      });
+    }
+
+    // 2. Intercept Back Button
+    // Push state to prevent immediate exit on back button
+    if (window.history.state?.noBackExitsApp !== true) {
+      window.history.pushState({ noBackExitsApp: true }, "");
+    }
+    window.addEventListener('popstate', (event) => {
+      if (confirm("Cofirm closing window?")) {
+        window.close();
+      } else {
+        // Re-push state to keep intercepting
+        window.history.pushState({ noBackExitsApp: true }, "");
+      }
+    });
+
+    // 3. Intercept direct close/reload window (beforeunload)
+    window.addEventListener('beforeunload', (event) => {
+      event.preventDefault();
+      event.returnValue = '';
+    });
+  }
+}
+
 // App Bootstrapper
 function boot() {
   initTheme();
   initAppListeners();
   initPWAPrompts();
   registerServiceWorker();
+  initCloseConfirmation();
 
   // Load Markdown data
   const cachedMarkdown = localStorage.getItem('todont_markdown');

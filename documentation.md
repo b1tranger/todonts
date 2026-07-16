@@ -47,7 +47,8 @@ The custom parser split-compiles the document body:
 - **Feature**: Task Priority Auto-Reordering. Streak-based tasks (persistent and daily recurring) automatically reorder themselves in ascending order of their streak counts (lowest streak/highest priority at the top) whenever a task is checked. Regular tasks remain unsorted and retain their relative positions.
 - **Feature**: Background Constraint Notifications. Integrated background notifications inside the Service Worker. Pushes a random active task reminder every 6 hours and a summary alert of all active tasks every 24 hours. State is shared via a JSON endpoint in Cache Storage.
 - **Feature**: Periodic Sync Integration. Configured Periodic Sync query permissions to periodically trigger notification checks from the operating system.
-- **Feature**: Live Editor YAML Auto-Scroll. Toggling open the Markdown Live Editor now automatically scrolls the textarea past the YAML Front Matter configuration block, aligning the viewport immediately to the start of the task constraints.
+- **Feature**: Live Editor YAML Auto-Scroll. Toggling open the Markdown Live Editor now automatically scrolls the textarea past the YAML Front Matter configuration block using a hidden target marker (`<!-- TASKS START HERE -->`), aligning the viewport immediately to the start of the task constraints.
+- **Feature**: PWA Exit Confirmation & Exit Button. When running in PWA standalone mode, the app intercepts back button presses (History API) and window closure to prompt `"Cofirm closing window?"`. Added an explicit "Close App" button inside the mobile responsive sidebar footer.
 
 ### v1.6.0
 - **Feature**: Balanced Success Score. Successes rating in the header is now calculated as `(Total Points + Total Streaks) / (Days Passed + Active Tasks)`. This balances the points by rewarding consistent task completion streaks and penalizing task hoarding (backlog/active tasks).
