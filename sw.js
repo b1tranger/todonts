@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todont-cache-v30';
+const CACHE_NAME = 'todont-cache-v31';
 const ASSETS = [
   './',
   './index.html',
@@ -91,17 +91,20 @@ self.addEventListener('install', (e) => {
 // Activate event - cleaning up old caches
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
+    Promise.all([
+      caches.keys().then((keys) => {
+        return Promise.all(
+          keys.map((key) => {
+            if (key !== CACHE_NAME) {
+              return caches.delete(key);
+            }
+          })
+        );
+      }),
+      self.clients.claim(),
+      checkBackgroundNotifications()
+    ])
   );
-  self.clients.claim();
 });
 
 // Fetch event - cache first strategy with dynamic caching for runtime requests
@@ -110,6 +113,9 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') {
     return;
   }
+
+  // Trigger background check asynchronously
+  e.waitUntil(checkBackgroundNotifications());
 
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then((cachedResponse) => {
@@ -136,3 +142,71 @@ self.addEventListener('fetch', (e) => {
     })
   );
 });
+
+// Function to check if background notifications should be triggered
+async function checkBackgroundNotifications() {
+  try {
+    const cache = await caches.open('todont-notification-cache');
+    const response = await cache.match('/notification-state.json');
+    if (!response) return;
+
+    const data = await response.json();
+    const now = Date.now();
+    let updated = false;
+
+    // Check 6-hour random active task notification
+    const interval6h = 6 * 60 * 60 * 1000;
+    if (now - data.last6hTime >= interval6h) {
+      if (data.activeTasks && data.activeTasks.length > 0) {
+        const randomIndex = Math.floor(Math.random() * data.activeTasks.length);
+        const randomTask = data.activeTasks[randomIndex];
+        self.registration.showNotification("Constraint Reminder", {
+          body: `Remember to avoid: ${randomTask}`,
+          icon: './icon.svg'
+        });
+      }
+      data.last6hTime = now;
+      updated = true;
+    }
+
+    // Check 24-hour daily backlog notification
+    const interval24h = 24 * 60 * 60 * 1000;
+    if (now - data.last24hTime >= interval24h) {
+      const activeCount = data.activeTasks ? data.activeTasks.length : 0;
+      if (activeCount > 0) {
+        self.registration.showNotification("To-Don't Daily Alert", {
+          body: `You need to avoid these ${activeCount} tasks!`,
+          icon: './icon.svg'
+        });
+      }
+      data.last24hTime = now;
+      updated = true;
+    }
+
+    if (updated) {
+      await cache.put(
+        '/notification-state.json',
+        new Response(JSON.stringify(data), {
+          headers: { 'Content-Type': 'application/json' }
+        })
+      );
+    }
+  } catch (err) {
+    console.error('Error checking service worker background notifications:', err);
+  }
+}
+
+// Listen for messaging check triggers from the app
+self.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'CHECK_NOTIFICATIONS') {
+    e.waitUntil(checkBackgroundNotifications());
+  }
+});
+
+// Listen for Periodic Sync triggers
+self.addEventListener('periodicsync', (e) => {
+  if (e.tag === 'todont-background-check') {
+    e.waitUntil(checkBackgroundNotifications());
+  }
+});
+

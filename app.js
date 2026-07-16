@@ -652,6 +652,9 @@ function loadDataFromMarkdown(markdown) {
 function syncSaveState() {
   localStorage.setItem('todont_markdown', AppState.rawMarkdown);
   updateStatusBar();
+  updateServiceWorkerNotificationData().then(() => {
+    pingServiceWorkerNotifications();
+  });
 }
 
 // Update the bottom status bar information
@@ -683,6 +686,81 @@ function recalculateDaysPassed() {
   AppState.profile.days_passed = parseFloat(Math.max(diffMs / (1000 * 60 * 60 * 24), 0).toFixed(4));
 }
 
+// Helper: Get streak count for a markdown checklist line
+function getStreakOfLine(line) {
+  const match = line.match(/^\s*-\s+(?:<<\[[ xX]\]>>|<\[[ xX]\]>)\s+(.*)$/);
+  if (!match) return 0;
+  const taskText = match[1].trim();
+  const taskId = slugify(taskText);
+  const historyItem = AppState.history.find(item => item.id === taskId);
+  return historyItem && historyItem.streak ? historyItem.streak : 0;
+}
+
+// Helper: Sort streak-based tasks inside a chunk by streak count ascending (Option A)
+function sortChunk(chunk) {
+  const isStreakCheckboxLine = (line) => /^\s*-\s+(?:<<\[[ xX]\]>>|<\[[ xX]\]>)\s+.*$/.test(line);
+
+  // 1. Find indices of all streak-based task lines in the chunk
+  const streakIndices = [];
+  for (let i = 0; i < chunk.length; i++) {
+    if (isStreakCheckboxLine(chunk[i])) {
+      streakIndices.push(i);
+    }
+  }
+
+  if (streakIndices.length <= 1) return chunk;
+
+  // 2. Extract and sort the streak tasks (lowest streak first, meaning highest priority at top)
+  const streakLines = streakIndices.map(idx => chunk[idx]);
+  streakLines.sort((lineA, lineB) => {
+    const streakA = getStreakOfLine(lineA);
+    const streakB = getStreakOfLine(lineB);
+    return streakA - streakB;
+  });
+
+  // 3. Put sorted lines back in the chunk
+  const result = [...chunk];
+  for (let i = 0; i < streakIndices.length; i++) {
+    result[streakIndices[i]] = streakLines[i];
+  }
+
+  return result;
+}
+
+// Helper: Scan markdown lines, identify contiguous checkbox chunks and reorder them
+function reorderCheckboxChunks(lines) {
+  const isCheckboxLine = (line) => /^\s*-\s+(?:<<\[[ xX]\]>>|<\[[ xX]\]>|\[[ xX]\])\s+.*$/.test(line);
+  const isDividerLine = (line) => line.trim() === '<hr>';
+
+  const result = [...lines];
+  let i = 0;
+  while (i < result.length) {
+    if (isCheckboxLine(result[i])) {
+      // Find the start and end of this contiguous checkbox chunk
+      let start = i;
+      let end = i;
+      while (end < result.length - 1 && (isCheckboxLine(result[end + 1]) || isDividerLine(result[end + 1]))) {
+        end++;
+      }
+
+      // Extract the lines of this chunk
+      const chunk = result.slice(start, end + 1);
+
+      // Reorder this chunk
+      const reorderedChunk = sortChunk(chunk);
+
+      // Replace the chunk in the result array
+      result.splice(start, chunk.length, ...reorderedChunk);
+
+      // Advance i past this chunk
+      i = end + 1;
+    } else {
+      i++;
+    }
+  }
+  return result;
+}
+
 // Helper: Calculate total tasks added and total active streaks
 function getPointsStats() {
   const lines = AppState.bodyText.split(/\r?\n/);
@@ -712,6 +790,61 @@ function getPointsStats() {
 
   return { totalTasks, totalStreaks };
 }
+
+// Helper: Update shared Cache Storage state for Service Worker notifications
+async function updateServiceWorkerNotificationData() {
+  const activeTasks = [];
+  const lines = AppState.bodyText.split(/\r?\n/);
+  for (const line of lines) {
+    const recMatch = line.match(/^\s*-\s+<<\[ \]>>\s+(.*)$/);
+    const persMatch = line.match(/^\s*-\s+<\[ \]>\s+(.*)$/);
+    const stdMatch = line.match(/^\s*-\s+\[ \]\s+(.*)$/);
+
+    if (recMatch) activeTasks.push(recMatch[1].trim());
+    else if (persMatch) activeTasks.push(persMatch[1].trim());
+    else if (stdMatch) activeTasks.push(stdMatch[1].trim());
+  }
+
+  try {
+    const cache = await caches.open('todont-notification-cache');
+    let last6hTime = Date.now();
+    let last24hTime = Date.now();
+
+    try {
+      const existingResponse = await cache.match('/notification-state.json');
+      if (existingResponse) {
+        const existingData = await existingResponse.json();
+        if (existingData.last6hTime !== undefined) last6hTime = existingData.last6hTime;
+        if (existingData.last24hTime !== undefined) last24hTime = existingData.last24hTime;
+      }
+    } catch (e) {
+      console.warn("No existing notification state in cache, initializing.", e);
+    }
+
+    const data = {
+      activeTasks,
+      last6hTime,
+      last24hTime
+    };
+
+    await cache.put(
+      '/notification-state.json',
+      new Response(JSON.stringify(data), {
+        headers: { 'Content-Type': 'application/json' }
+      })
+    );
+  } catch (err) {
+    console.error('Failed to update service worker notification cache:', err);
+  }
+}
+
+// Helper: Ping service worker to check if background notifications should run
+function pingServiceWorkerNotifications() {
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'CHECK_NOTIFICATIONS' });
+  }
+}
+
 
 // Update Header Displays
 function updateHeaderStats() {
@@ -1131,8 +1264,9 @@ function handleCheckboxChange(e) {
     showFloatingPoints(pointsAwarded, clickX, clickY);
   }
 
-  // Recompile whole raw Markdown
-  AppState.rawMarkdown = lines.join('\n');
+  // Reorder tasks in each checkbox chunk
+  const reorderedLines = reorderCheckboxChunks(lines);
+  AppState.rawMarkdown = reorderedLines.join('\n');
 
   // If points were awarded or recurring task was updated, serialize the stats back into the YAML front matter
   if (pointsAwarded > 0 || (type === 'recurring' && checked)) {
@@ -1777,6 +1911,27 @@ function initPWAPrompts() {
   });
 }
 
+// Register Periodic Sync for background notifications
+async function registerPeriodicSync(registration) {
+  if ('periodicSync' in registration) {
+    try {
+      const status = await navigator.permissions.query({
+        name: 'periodic-background-sync',
+      });
+      if (status.state === 'granted') {
+        await registration.periodicSync.register('todont-background-check', {
+          minInterval: 6 * 60 * 60 * 1000 // 6 hours
+        });
+        console.log('Periodic Sync registered successfully');
+      } else {
+        console.warn('Periodic Sync permission not granted');
+      }
+    } catch (err) {
+      console.warn('Periodic Sync registration failed:', err);
+    }
+  }
+}
+
 // Register PWA Service Worker
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
@@ -1788,6 +1943,9 @@ function registerServiceWorker() {
           const text = document.getElementById('sw-status-text');
           if (dot) dot.className = "status-dot green";
           if (text) text.textContent = "Offline Ready";
+
+          // Register periodic sync if supported
+          registerPeriodicSync(reg);
         })
         .catch(err => {
           console.warn('Service Worker registration failed: ', err);
@@ -1816,6 +1974,9 @@ function boot() {
   const cachedMarkdown = localStorage.getItem('todont_markdown');
   if (cachedMarkdown) {
     loadDataFromMarkdown(cachedMarkdown);
+    updateServiceWorkerNotificationData().then(() => {
+      pingServiceWorkerNotifications();
+    });
   } else {
     loadDataFromMarkdown(DEFAULT_MARKDOWN);
     syncSaveState();
@@ -1846,6 +2007,11 @@ function boot() {
       renderInteractiveView();
     }
   }, 30 * 1000);
+
+  // Set up 1-minute Service Worker background notification pinger
+  setInterval(() => {
+    pingServiceWorkerNotifications();
+  }, 60 * 1000);
 
   // Render views
   const editor = document.getElementById('markdown-editor');

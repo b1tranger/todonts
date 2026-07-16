@@ -16,7 +16,7 @@ To-Don't lets you write your constraints using standard Markdown syntax inside t
 
 ### 2. Persistent Habits (`- <[ ]>`)
 - **Syntax**: `- <[ ]> Don't check social media before noon`
-- **Behavior**: An ongoing constraint. When checked, it awards +1 to +5 success points, strikes through, and greys out. A 6-hour cooldown timer badge displays at the top-right corner, and the checkbox is locked (disabled). Once the 6-hour cooldown is over, the task automatically resets to unchecked, becomes active/interactive again, and schedules a browser push notification to alert you. When unchecked, no cooldown timer is shown.
+- **Behavior**: An ongoing constraint. When checked, it awards +1 to +5 success points, strikes through, greys out, and starts or increments its daily streak count (e.g. `🔥 3`) each time it is checked. A 6-hour cooldown timer badge displays at the top-right corner, and the checkbox is locked (disabled). Once the 6-hour cooldown is over, the task automatically resets to unchecked, becomes active/interactive again, and schedules a browser push notification to alert you. When unchecked, no cooldown timer is shown.
 
 ### 3. Daily Recurring Constraints (`- <<[ ]>>`)
 - **Syntax**: `- <<[ ]>> Don't drink soda today`
@@ -47,17 +47,17 @@ To-Don't features a gamified point system to reward restraint. Clicking on the *
 
 When checking a task, a clean floating point indicator animates near your cursor or checkbox showing the point gain. Points are accumulated as lifetime successes.
 
-### 🕒 Time-Decay Score Calculation
+### 🕒 Balanced Score Calculation
 The successes counter displayed in the header is a dynamic score calculated as:
-$$\text{Successes Score} = \frac{\text{Total Points Earned}}{\lceil\text{Total Days Passed since profile load}\rceil}$$
+$$\text{Successes Score} = \frac{\text{Total Points Earned} + \text{Total Streaks}}{\text{Total Days Passed} + \text{Active Tasks}}$$
 
-Because time continues to elapse, your successes score will automatically decline over time if you do not consistently maintain your To-Don't habits. This mechanic rewards active and consistent restraint.
+This formula balances your successes by rewarding consistent daily restraint (streaks) while penalizing an excessive backlog of uncompleted habits and tasks. Unless you stay consistent and complete your boundaries, your score will decrease over time.
 
 To track this offline without servers, your profile's YAML front matter automatically records:
 - `initial_load_date`: The date and time when your profile was first created.
 - `days_passed`: The total fractional days elapsed since the initial load.
 
-You can view your raw lifetime points and exact elapsed days anytime inside the **Points Distribution** modal by clicking the trophy successes badge in the header.
+You can view your raw successes, active tasks, active streaks, and exact elapsed days anytime inside the **Points Distribution** modal by clicking the trophy successes badge in the header.
 
 ---
 
@@ -87,6 +87,18 @@ While typing inside a checklist label:
 
 ### 5. Clear All
 Click the **`Clear All`** button in the header toolbar of the Interactive Tasks pane to wipe out all constraints and start fresh. Your profile username, successes count, and streak history remain safe in your YAML configuration headers.
+
+### 6. Auto-Reordering
+Streak-based tasks (Persistent Habits and Daily Recurring Constraints) automatically reorder themselves inside their checklist chunk whenever you check a task. They are sorted in ascending order of their streak counts (lowest streak/highest priority at the top, highest streak/lowest priority at the bottom). This keeps the boundaries you are struggling with at the top of your checklist to maximize focus. Regular tasks (`- [ ]`) don't have streaks, are not sorted, and retain their relative positions in the list.
+
+---
+
+## 🔔 Background Notifications
+When installed as a Progressive Web App (PWA), To-Don't runs background checks via its Service Worker:
+- **Every 6 Hours**: It pushes a notification reminding you to avoid a random active (unchecked) constraint from your checklist.
+- **Every 24 Hours**: It pushes a summary alert showing the count of outstanding tasks: `"You need to avoid these [total_active_tasks] tasks!"`.
+
+*Note: Background checks sync task states locally using Cache Storage. Notifications require browser notification permissions to be granted.*
 
 ---
 
