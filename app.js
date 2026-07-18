@@ -2130,12 +2130,15 @@ function initCloseConfirmation() {
   const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
   if (isPWA) {
+    let isClosing = false;
+
     // 1. Show Close App button in sidebar
     const closeBtn = document.getElementById('close-btn');
     if (closeBtn) {
       closeBtn.classList.remove('hidden');
       closeBtn.addEventListener('click', () => {
         if (confirm("Cofirm closing window?")) {
+          isClosing = true;
           window.close();
         }
       });
@@ -2148,6 +2151,7 @@ function initCloseConfirmation() {
     }
     window.addEventListener('popstate', (event) => {
       if (confirm("Cofirm closing window?")) {
+        isClosing = true;
         window.close();
       } else {
         // Re-push state to keep intercepting
@@ -2157,6 +2161,7 @@ function initCloseConfirmation() {
 
     // 3. Intercept direct close/reload window (beforeunload)
     window.addEventListener('beforeunload', (event) => {
+      if (isClosing) return;
       event.preventDefault();
       event.returnValue = '';
     });

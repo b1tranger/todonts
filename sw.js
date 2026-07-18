@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todont-cache-v32';
+const CACHE_NAME = 'todont-cache-v33';
 const ASSETS = [
   './',
   './index.html',
@@ -208,5 +208,23 @@ self.addEventListener('periodicsync', (e) => {
   if (e.tag === 'todont-background-check') {
     e.waitUntil(checkBackgroundNotifications());
   }
+});
+
+// Listen for notification click to open or focus the PWA
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ('focus' in client) {
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow('./');
+      }
+    })
+  );
 });
 
