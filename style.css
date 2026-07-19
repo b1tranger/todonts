@@ -13,36 +13,36 @@
   --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
 
   /* Theme Tokens - Light Mode Default */
-  --bg-app: #E2E8F0;               /* slate-200, darker gray backdrop */
-  --bg-pane: #F1F5F9;              /* slate-100, soft off-white pane */
-  --bg-header: #F1F5F9;            /* slate-100, matching header pane */
-  --bg-status: #E2E8F0;            /* slate-200, matching footer status */
+  --bg-app: #E5E5E0;               /* Soft warm gray backdrop */
+  --bg-pane: #F4F4F0;              /* Warm ivory off-white pane */
+  --bg-header: #F4F4F0;            /* Warm ivory header */
+  --bg-status: #E5E5E0;            /* Warm gray status footer */
   
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #94A3B8;
+  --text-primary: #1C1917;         /* Soft warm charcoal */
+  --text-secondary: #44403C;       /* Soft stone gray */
+  --text-muted: #78716C;           /* Muted stone gray */
   
-  --accent-primary: #1A365D;       /* Dark Blue */
-  --accent-secondary: #2563EB;     /* Royal Blue */
-  --accent-success: #059669;       /* Emerald Green */
+  --accent-primary: #1E3A8A;       /* Deep Navy */
+  --accent-secondary: #3B82F6;     /* Bright Blue */
+  --accent-success: #10B981;       /* Emerald Green */
   
   --accent: var(--accent-secondary);
-  --accent-hover: #1d4ed8;         /* blue-700 */
+  --accent-hover: #2563EB;
   
-  --card-bg: #FFFFFF;              /* Pure white cards pop off slate-100 pane background */
-  --card-border: 1px solid #E2E8F0;
-  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --card-bg: #FAF9F5;              /* Gentle warm cream cards */
+  --card-border: 1px solid #E5E5E0;
+  --card-shadow: 0 4px 12px rgba(28, 25, 23, 0.04);
 
-  --border-color: #E2E8F0;
-  --border-focus: #2563EB;
+  --border-color: #E5E5E0;
+  --border-focus: #3B82F6;
   
-  --checkbox-bg: #FFFFFF;
-  --checkbox-border: #94A3B8;
-  --checkbox-checked: #1A365D;
-  --checkbox-glow: rgba(26, 54, 93, 0.1);
+  --checkbox-bg: #FAF9F5;
+  --checkbox-border: #78716C;
+  --checkbox-checked: #1E3A8A;
+  --checkbox-glow: rgba(30, 58, 138, 0.08);
   
-  --toast-bg: #1A365D;
-  --toast-text: #FFFFFF;
+  --toast-bg: #1E3A8A;
+  --toast-text: #FAF9F5;
   
   --transition-speed: 0.25s;
   --transition-curve: cubic-bezier(0.4, 0, 0.2, 1);
