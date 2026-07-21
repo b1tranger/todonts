@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todont-cache-v34';
+const CACHE_NAME = 'todont-cache-v35';
 const ASSETS = [
   './',
   './index.html',
@@ -23,6 +23,7 @@ const ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js',
   'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js',
   'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js',
+  'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js',
 
   // CDN Webfonts
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/webfonts/fa-solid-900.woff2',
@@ -38,6 +39,7 @@ const ASSETS = [
   './dependencies/katex/katex.min.js',
   './dependencies/katex/auto-render.min.js',
   './dependencies/katex/katex.min.css',
+  './dependencies/mermaid/mermaid.min.js',
 
   // Localized Font Awesome
   './dependencies/font-awesome/css/all.min.css',
